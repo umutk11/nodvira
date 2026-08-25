@@ -3,5 +3,5 @@ services:
     build: .
     container_name: nodvira-web
     ports:
-      - "80:80"
+      - "3030:80"
     restart: unless-stopped
