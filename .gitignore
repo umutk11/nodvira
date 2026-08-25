@@ -1,0 +1,12 @@
+# Bu repo yalnızca frontend inceleme kopyasıdır.
+backend/
+admin/
+assets/images/
+assets/uploads/
+.env
+.env.*
+!.env.example
+node_modules/
+.pnpm-store/
+*.log
+.publish-tools/
