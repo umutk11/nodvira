@@ -2,7 +2,7 @@
   "use strict";
 
   const CATEGORY_LABELS = { network: "Network", system: "Sistem", web: "Web Teknolojileri", software: "Yazılım", transformation: "Dijital Dönüşüm", consulting: "Teknoloji Danışmanlığı", management: "Teknoloji Danışmanlığı" };
-  const SERVICE_LINKS = { network: "network.html", system: "sistem-cozumleri.html", web: "web-tasarim.html", software: "yazilim-cozumleri.html", transformation: "cozumler.html", consulting: "cozumler.html", management: "cozumler.html" };
+  const SERVICE_LINKS = { network: "/hizmetlerimiz/network-cozumleri", system: "/hizmetlerimiz/sistem-cozumleri", web: "/hizmetlerimiz/web-cozumleri", software: "/hizmetlerimiz/yazilim-cozumleri", transformation: "/hizmetlerimiz/teknoloji-danismanligi", consulting: "/hizmetlerimiz/teknoloji-danismanligi", management: "/hizmetlerimiz/teknoloji-danismanligi" };
   const initializedRoots = new WeakSet();
 
   function createElement(tag, className, text) {
@@ -164,7 +164,7 @@
     metaRow.append(category, date);
     card.append(metaRow, createElement("h3", "", post.title), createElement("p", "", post.excerpt));
     const link = createElement("a", "card-link", "Devamını Oku →");
-    link.href = `blog-detay.html?slug=${encodeURIComponent(post.slug)}`;
+    link.href = `/blog/${encodeURIComponent(post.slug)}`;
     card.append(link);
     return card;
   }
@@ -200,7 +200,9 @@
   async function renderDetail(root) {
     const article = root.querySelector("[data-blog-detail]");
     if (!article) return;
-    const slug = activePageUrl().searchParams.get("slug");
+    const activeUrl = activePageUrl();
+    const cleanSlug = decodeURIComponent(activeUrl.pathname).match(/^\/blog\/([^/]+)\/?$/)?.[1];
+    const slug = cleanSlug || activeUrl.searchParams.get("slug");
     try {
       const publishedPosts = [...(global.StaticBlogPosts || [])].filter((candidate) => candidate.status === "published");
       const post = slug ? publishedPosts.find((candidate) => candidate.slug === slug) : null;
@@ -233,7 +235,7 @@
       const related = createElement("aside", "card blog-related-service");
       related.append(createElement("h2", "", "Bu konuda desteğe mi ihtiyacınız var?"), createElement("p", "", "Mevcut yapınızı ve hedefinizi birlikte değerlendirerek uygulanabilir bir sonraki adımı netleştirebiliriz."));
       const relatedLink = createElement("a", "card-link", "İlgili hizmeti inceleyin →");
-      relatedLink.href = SERVICE_LINKS[post.category] || "hizmetler.html";
+      relatedLink.href = SERVICE_LINKS[post.category] || "/hizmetlerimiz";
       related.append(relatedLink);
       renderedContent.container.append(related);
 
@@ -251,9 +253,9 @@
       }
 
       const backLink = createElement("a", "btn btn-secondary", "← Tüm Yazılar");
-      backLink.href = "blog.html";
+      backLink.href = "/blog";
       const contactLink = createElement("a", "btn btn-primary", "Projenizi Konuşalım →");
-      contactLink.href = "iletisim.html";
+      contactLink.href = "/iletisim";
       const actions = createElement("div", "button-row");
       actions.append(backLink, contactLink);
       article.append(actions);

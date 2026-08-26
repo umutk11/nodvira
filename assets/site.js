@@ -1,18 +1,62 @@
 const routes = {
-  home: "index.html",
-  about: "hakkimda.html",
-  services: "hizmetler.html",
-  solutions: "cozumler.html",
-  projects: "projeler.html",
-  blog: "blog.html",
-  faq: "sss.html",
-  contact: "iletisim.html",
-  web: "web-tasarim.html",
-  network: "network.html",
-  software: "yazilim-cozumleri.html",
-  system: "sistem-cozumleri.html",
-  caseStudy: "referans-detay.html"
+  home: "/",
+  about: "/hakkimizda",
+  services: "/hizmetlerimiz",
+  solutions: "/hizmetlerimiz/teknoloji-danismanligi",
+  projects: "/referanslarimiz",
+  blog: "/blog",
+  faq: "/sss",
+  contact: "/iletisim",
+  web: "/hizmetlerimiz/web-cozumleri",
+  network: "/hizmetlerimiz/network-cozumleri",
+  software: "/hizmetlerimiz/yazilim-cozumleri",
+  system: "/hizmetlerimiz/sistem-cozumleri",
+  caseStudy: "/referanslarimiz/kurumsal-web-platformu"
 };
+
+const pageKeysByPath = {
+  "/": "index.html",
+  "/hizmetlerimiz": "hizmetler.html",
+  "/hizmetlerimiz/web-cozumleri": "web-tasarim.html",
+  "/hizmetlerimiz/yazilim-cozumleri": "yazilim-cozumleri.html",
+  "/hizmetlerimiz/network-cozumleri": "network.html",
+  "/hizmetlerimiz/sistem-cozumleri": "sistem-cozumleri.html",
+  "/hizmetlerimiz/teknoloji-danismanligi": "cozumler.html",
+  "/referanslarimiz": "projeler.html",
+  "/hakkimizda": "hakkimda.html",
+  "/blog": "blog.html",
+  "/sss": "sss.html",
+  "/iletisim": "iletisim.html"
+};
+
+const caseStudySlugs = {
+  web: "kurumsal-web-platformu",
+  software: "soguk-zincir-istisna-yonetimi",
+  network: "ag-standardizasyonu",
+  system: "sistem-modernizasyonu",
+  consulting: "teknoloji-yol-haritasi"
+};
+
+const caseStudyKeysBySlug = Object.fromEntries(Object.entries(caseStudySlugs).map(([key, slug]) => [slug, key]));
+
+function normalizeRoutePath(pathname) {
+  const decoded = decodeURIComponent(pathname || "/");
+  if (decoded === "/") return decoded;
+  return decoded.replace(/\/+$/, "");
+}
+
+function pageKeyFromUrl(destination) {
+  const pathname = normalizeRoutePath(destination.pathname);
+  if (/^\/blog\/[^/]+$/.test(pathname)) return "blog-detay.html";
+  if (/^\/referanslarimiz\/[^/]+$/.test(pathname)) return "referans-detay.html";
+  if (pageKeysByPath[pathname]) return pageKeysByPath[pathname];
+  const legacyFile = pathname.split("/").pop() || "index.html";
+  return window.sitePages?.[legacyFile] ? legacyFile : null;
+}
+
+function caseStudyUrl(key) {
+  return `/referanslarimiz/${caseStudySlugs[key] || caseStudySlugs.web}`;
+}
 
 let page = document.body.dataset.page || "";
 
@@ -34,11 +78,11 @@ function headerMarkup() {
     const current = page === key ? 'aria-current="page"' : "";
     if (key !== "services") return `<a data-nav-link data-page-key="${key}" href="${routes[key]}" class="nav-link ${active}" ${current}>${label}</a>`;
     const serviceLinks = serviceNavItems.map(([, title, description, destination], index) => `<a class="mega-service" href="${destination}"><span class="mega-number">0${index + 1}</span><span><strong>${title}</strong><small>${description}</small></span><span class="mega-arrow" aria-hidden="true">↗</span></a>`).join("");
-    return `<div class="nav-services"><a data-nav-link data-page-key="services" href="${routes.services}" class="nav-link service-trigger ${active}" ${current} aria-haspopup="true">${label}<img class="nav-chevron" src="assets/icons/chevron-down.svg" alt="" aria-hidden="true"></a><div class="mega-menu"><div class="mega-grid"><div><div class="mega-label">HİZMET KATALOĞU</div><div class="mega-services">${serviceLinks}</div></div><aside class="mega-feature"><h3>Teknolojiyi iş hedefleriniz için birlikte kurgulayalım.</h3><p>İhtiyacınızın hangi hizmet alanına girdiğinden emin değilseniz ilk görüşmede kapsamı netleştirebiliriz.</p><a class="btn btn-primary" href="${routes.contact}">İhtiyacınızı Anlatın →</a></aside></div></div></div>`;
+    return `<div class="nav-services"><a data-nav-link data-page-key="services" href="${routes.services}" class="nav-link service-trigger ${active}" ${current} aria-haspopup="true">${label}<img class="nav-chevron" src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></a><div class="mega-menu"><div class="mega-grid"><div><div class="mega-label">HİZMET KATALOĞU</div><div class="mega-services">${serviceLinks}</div></div><aside class="mega-feature"><h3>Teknolojiyi iş hedefleriniz için birlikte kurgulayalım.</h3><p>İhtiyacınızın hangi hizmet alanına girdiğinden emin değilseniz ilk görüşmede kapsamı netleştirebiliriz.</p><a class="btn btn-primary" href="${routes.contact}">İhtiyacınızı Anlatın →</a></aside></div></div></div>`;
   }).join("");
-  const mobileLinks = `<a data-page-key="home" href="${routes.home}" class="${page === "home" ? "active" : ""}">Ana Sayfa</a><div class="mobile-service-group"><div class="mobile-service-row"><a data-page-key="services" href="${routes.services}" class="${page === "services" ? "active" : ""}">Hizmetlerimiz</a><button class="mobile-service-toggle" type="button" aria-label="Hizmet alt menüsünü aç" aria-expanded="false" aria-controls="mobile-services"><img src="assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button></div><div class="mobile-services" id="mobile-services">${serviceNavItems.map(([, title, , destination]) => `<a href="${destination}">${title}</a>`).join("")}</div></div><a data-page-key="projects" href="${routes.projects}" class="${page === "projects" ? "active" : ""}">Referanslarımız</a><a data-page-key="about" href="${routes.about}" class="${page === "about" ? "active" : ""}">Hakkımızda</a><a data-page-key="blog" href="${routes.blog}" class="${page === "blog" ? "active" : ""}">Blog</a><a data-page-key="faq" href="${routes.faq}" class="${page === "faq" ? "active" : ""}">SSS</a><a data-page-key="contact" href="${routes.contact}" class="${page === "contact" ? "active" : ""}">İletişim</a>`;
+  const mobileLinks = `<a data-page-key="home" href="${routes.home}" class="${page === "home" ? "active" : ""}">Ana Sayfa</a><div class="mobile-service-group"><div class="mobile-service-row"><a data-page-key="services" href="${routes.services}" class="${page === "services" ? "active" : ""}">Hizmetlerimiz</a><button class="mobile-service-toggle" type="button" aria-label="Hizmet alt menüsünü aç" aria-expanded="false" aria-controls="mobile-services"><img src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button></div><div class="mobile-services" id="mobile-services">${serviceNavItems.map(([, title, , destination]) => `<a href="${destination}">${title}</a>`).join("")}</div></div><a data-page-key="projects" href="${routes.projects}" class="${page === "projects" ? "active" : ""}">Referanslarımız</a><a data-page-key="about" href="${routes.about}" class="${page === "about" ? "active" : ""}">Hakkımızda</a><a data-page-key="blog" href="${routes.blog}" class="${page === "blog" ? "active" : ""}">Blog</a><a data-page-key="faq" href="${routes.faq}" class="${page === "faq" ? "active" : ""}">SSS</a><a data-page-key="contact" href="${routes.contact}" class="${page === "contact" ? "active" : ""}">İletişim</a>`;
   return `<header class="site-header"><div class="container header-inner">
-    <a class="brand header-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="brand-symbol" src="assets/brand/nodvira-icon.png" alt=""><img class="brand-wordmark" src="assets/brand/nodvira-wordmark-light.png" alt=""></a>
+    <a class="brand header-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="header-lockup" src="/assets/brand/nodvira-logo.svg?v=20260826-static1" alt=""></a>
     <nav class="desktop-nav" aria-label="Ana navigasyon">${desktopLinks}<span class="nav-active-line" aria-hidden="true"></span></nav>
     <div class="header-actions"><a class="btn btn-primary header-cta" href="${routes.contact}"><span>Projenizi Konuşalım</span><span class="cta-arrow" aria-hidden="true">→</span></a><button class="menu-toggle" type="button" aria-label="Menüyü aç" aria-expanded="false" aria-controls="mobile-menu"><span></span></button></div>
   </div></header><div class="mobile-panel" id="mobile-menu" aria-hidden="true"><div class="mobile-menu-inner"><nav class="mobile-nav" aria-label="Mobil navigasyon">${mobileLinks}</nav><div class="mobile-contact"><span>PROJENİZİ BİRLİKTE DEĞERLENDİRELİM</span><a class="btn btn-primary" href="${routes.contact}">Projenizi Konuşalım →</a><a class="mobile-mail" href="mailto:info@nodvira.com">info@nodvira.com</a></div></div></div>`;
@@ -47,7 +91,7 @@ function headerMarkup() {
 function footerMarkup() {
   return `<footer class="site-footer"><div class="container">
     <div class="footer-grid">
-      <div><a class="brand footer-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="brand-lockup" src="assets/brand/nodvira-logo-standard.png" alt=""></a><p class="muted" style="margin-top:18px;max-width:300px">Web, yazılım, network, sistem ve teknoloji danışmanlığını bütüncül çözümlerde bir araya getiren teknoloji çözüm ortağı.</p></div>
+      <div><a class="brand footer-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="brand-lockup" src="/assets/brand/nodvira-logo.svg?v=20260826-static1" alt=""></a><p class="muted" style="margin-top:18px;max-width:300px">Web, yazılım, network, sistem ve teknoloji danışmanlığını bütüncül çözümlerde bir araya getiren teknoloji çözüm ortağı.</p></div>
       <div><div class="footer-title">HİZMETLER</div><div class="footer-links"><a href="${routes.web}">Web Çözümleri</a><a href="${routes.software}">Yazılım Çözümleri</a><a href="${routes.network}">Network Çözümleri</a><a href="${routes.system}">Sistem Çözümleri</a><a href="${routes.solutions}">Teknoloji Danışmanlığı</a></div></div>
       <div><div class="footer-title">İLETİŞİM</div><div class="footer-links"><a href="mailto:info@nodvira.com">info@nodvira.com</a><a href="https://nodvira.com">nodvira.com</a></div></div>
       <div><div class="footer-title">KEŞFEDİN</div><div class="footer-links"><a href="${routes.about}">Hakkımızda</a><a href="${routes.projects}">Referanslarımız</a><a href="${routes.blog}">Blog</a><a href="${routes.faq}">Sıkça Sorulan Sorular</a><a href="${routes.contact}">İletişim</a></div></div>
@@ -194,9 +238,8 @@ function updateDocumentMetadata(pageData) {
 }
 
 function getPageData(destination) {
-  const pathname = decodeURIComponent(destination.pathname);
-  const fileName = pathname.split("/").pop() || "index.html";
-  return window.sitePages?.[fileName] || null;
+  const fileName = pageKeyFromUrl(destination);
+  return fileName ? window.sitePages?.[fileName] || null : null;
 }
 
 function scrollToDestination(destination) {
@@ -381,425 +424,133 @@ function initScrollMotion(root) {
 const caseStudyOrder = ["web", "software", "network", "system", "consulting"];
 
 const caseStudyData = {
-  "web": {
-    "title": "Kurumsal Web Deneyimi",
-    "client": "Mock hizmet şirketi",
-    "industry": "Profesyonel Hizmetler",
-    "services": "Bilgi Mimarisi · UX · Front-end",
-    "status": "Mock vaka çalışması",
-    "code": "WEB / 01",
-    "visualLabel": "Web deneyimi",
-    "visualCaption": "Yer tutucu proje verisi",
-    "summary": "Çok sayfalı bir hizmet yapısını ortak içerik modeli ve responsive bileşen sistemi altında birleştiren örnek web projesi.",
-    "need": [
-      "Bu bölüm, arayüzde uzun metin davranışını değerlendirmek için hazırlanmış sentetik problem açıklamasıdır. Herhangi bir gerçek kurum, kullanıcı, sistem veya proje bilgisi içermez.",
-      "Mock senaryoda dağınık sorumluluklar, tutarsız uygulamalar ve ölçülemeyen operasyon adımları ortak problem çerçevesinde ele alınmaktadır."
+  web: {
+    title: "12 Hizmet Hattı İçin Kurumsal Web Platformu",
+    client: "Anonim B2B danışmanlık grubu",
+    industry: "Mühendislik ve Profesyonel Hizmetler",
+    services: "Bilgi Mimarisi · UX · Front-end · Teknik SEO",
+    status: "Anonim vaka raporu",
+    code: "WEB / 01",
+    visualLabel: "B2B hizmet platformu",
+    visualCaption: "12 hizmet hattı · 3 bölge · 280+ mevcut URL",
+    summary: "On iki hizmet hattını üç bölgesel ekip adına yöneten B2B danışmanlık grubunun 280’den fazla URL’ye dağılmış içeriğini ortak bilgi mimarisi, ölçülebilir iletişim akışı ve tekrar kullanılabilir yayın sistemi altında birleştiren web dönüşümü.",
+    need: [
+      "Grubun on iki hizmet hattı üç bölgesel ekip tarafından ayrı ayrı güncelleniyordu. Yapılan içerik taramasında aynı hizmeti farklı adlarla anlatan sayfalar, güncel olmayan uzman profilleri ve birbiriyle rekabet eden 280’den fazla indekslenebilir URL bulundu. Mobil menüde bir hizmet detayına ulaşmak üç seviyeye kadar inerken, sektör sayfaları ilgili hizmet ve uzmanlarla sistematik biçimde bağlanmıyordu.",
+      "Dört farklı iletişim formunun tamamı aynı posta kutusuna yalnızca serbest metin gönderiyor; talebin hangi hizmetten, bölgeden veya içerikten geldiği kaydedilmiyordu. Pazarlama ekibi yeni bir kampanya sayfası açmak için geliştirme ekibinden destek almak zorunda kalıyor, kullanılan özel sayfa blokları nedeniyle yayın öncesi görsel ve teknik kontrol her seferinde yeniden yapılıyordu."
     ],
-    "approach": [
-      "Örnek keşif çalışmasında kullanıcı ihtiyaçları, teknik bağımlılıklar ve öncelikli akışlar birlikte değerlendirilmiştir.",
-      "Kapsam; arayüz incelemesinde farklı paragraf uzunluklarını ve içerik hiyerarşisini gösterecek şekilde modellenmiştir."
+    approach: [
+      "URL envanteri; korunacak, birleştirilecek, yönlendirilecek ve kaldırılacak içerikler olarak sınıflandırıldı. Satış ve uzman ekipleriyle yapılan oturumlarda kullanıcıların ilk görüşme öncesinde sorduğu sorular çıkarıldı; hizmet, sektör, uzmanlık, içgörü ve iletişim içerikleri arasındaki zorunlu bağlantılar yeni bilgi mimarisinin girdisi yapıldı.",
+      "Üç öncelikli kullanıcı yolculuğu prototiplendi: belirli bir hizmet arayan karar verici, sektörüne uygun yetkinliği araştıran yönetici ve doğrudan uzman görüşmesi talep eden ziyaretçi. Sayfa şablonları bu görevlerle test edildikten sonra içerik alanları, bileşen varyasyonları, URL kuralları ve analitik olay sözlüğü geliştirme sözleşmesine dönüştürüldü."
     ],
-    "solution": [
-      "Örnek çözüm; yeniden kullanılabilir bileşenler, açık sorumluluklar ve izlenebilir durumlar üzerine kurulmuştur.",
-      "Teknik yaklaşım yalnızca tasarım yerleşimini göstermek amacıyla genelleştirilmiş, gerçek ürün ve altyapı ayrıntıları kullanılmamıştır."
+    solution: [
+      "Hizmet, sektör, uzman, vaka ve içgörü için ayrı içerik tipleri oluşturuldu; bu tipler referans alanlarıyla birbirine bağlandı. Editörler yalnızca onaylı alanları ve on sekiz yeniden kullanılabilir bileşeni kullanarak sayfa kurabilir hale getirildi. Hizmet sayfalarında kapsam, çözülen problem, süreç, ilgili uzmanlık ve iletişim bileşenlerinin bulunması yayın kuralına bağlandı.",
+      "Front-end tarafında semantik başlık yapısı, klavye ile çalışan navigasyon, responsive grid ve ortak odak durumları bileşen seviyesinde uygulandı. Eski URL’ler için yönlendirme matrisi, görseller için boyut ve gecikmeli yükleme politikası, formlar için hizmet ve kaynak kimliği taşıyan gizli alanlar, analitik için de form başlatma, doğrulama hatası ve başarılı gönderim olayları tanımlandı."
     ],
-    "technicalIntro": "Mock teknik mimari, detay sayfasındaki açıklama ve diyagram bileşenlerinin değerlendirilmesi için dört katmanda gösterilmektedir.",
-    "architecture": [
-      [
-        "Deneyim Katmanı",
-        "Responsive arayüz, erişilebilir etkileşimler ve ortak bileşen kuralları."
-      ],
-      [
-        "Uygulama Katmanı",
-        "Örnek iş akışları, roller ve doğrulama adımları."
-      ],
-      [
-        "Veri Katmanı",
-        "Sentetik veri modeli, ilişki kuralları ve durum kayıtları."
-      ],
-      [
-        "Operasyon Katmanı",
-        "Mock izleme, bakım ve iyileştirme yaklaşımı."
-      ]
+    technicalIntro: "Teknik mimari, 280’den fazla eski URL’nin kontrollü geçişini ve üç editör ekibinin aynı kurallarla içerik üretmesini destekleyecek şekilde dört katmana ayrıldı.",
+    architecture: [
+      ["Deneyim Katmanı", "On sekiz bileşenden oluşan responsive UI sistemi, klavye navigasyonu ve hizmet odaklı iletişim akışları."],
+      ["İçerik Katmanı", "Hizmet, sektör, uzman, vaka ve içgörü içerik tipleri; zorunlu alanlar ve editoryal yayın rolleri."],
+      ["Sunum Katmanı", "Semantik HTML, responsive görsel kaynakları, kritik CSS yaklaşımı, önbellekleme ve URL yönlendirme matrisi."],
+      ["Ölçüm Katmanı", "Kaynak ve hizmet kimliği taşıyan formlar, analitik olay sözlüğü, doğrulama hataları ve teknik hata kayıtları."]
     ],
-    "technicalNote": "Bu teknik anlatım yalnızca UI/UX revizyonu için hazırlanmış mock içeriktir.",
-    "process": [
-      [
-        "Keşif",
-        "Örnek ihtiyaçlar ve öncelikli kullanıcı akışları belirlenir."
-      ],
-      [
-        "Modelleme",
-        "İçerik, veri ve bileşen ilişkileri taslak hale getirilir."
-      ],
-      [
-        "Prototip",
-        "Kritik ekranlar ve etkileşimler örnek veriyle doğrulanır."
-      ],
-      [
-        "Uygulama",
-        "Arayüz ve teknik bileşenler kontrollü olarak geliştirilir."
-      ],
-      [
-        "Değerlendirme",
-        "Geri bildirimler yeni revizyonlara dönüştürülür."
-      ]
-    ],
-    "outcomeLead": "Mock proje, tasarım ve içerik hiyerarşisinin gerçek veri paylaşılmadan incelenebilmesini sağlar.",
-    "outcome": [
-      "Bu sonuç bölümü, detay sayfasında birden fazla paragrafın, vurgulu metnin ve uzun içerik akışının nasıl göründüğünü değerlendirmek için hazırlanmıştır.",
-      "Gerçek müşteri sonucu, ölçüm, ürün adı veya operasyon verisi kullanılmamıştır; tüm ifadeler sentetiktir."
-    ],
-    "related": [
-      [
-        "Web Çözümleri",
-        "web-tasarim.html"
-      ],
-      [
-        "Yazılım Çözümleri",
-        "yazilim-cozumleri.html"
-      ],
-      [
-        "Teknoloji Danışmanlığı",
-        "cozumler.html"
-      ]
-    ]
+    technicalNote: "Teknoloji seçimi tek bir araca bağlı kalmadan; içerik ekibinin çalışma biçimi, bakım sorumluluğu ve performans hedefleri üzerinden değerlendirildi.",
+    process: [["Envanter", "280’den fazla URL, form, uzman profili ve mevcut analitik olayı sınıflandırıldı."], ["Bilgi Mimarisi", "On iki hizmet hattı, sektörler ve uzmanlıklar ortak içerik modeline bağlandı."], ["Prototip", "Üç kritik kullanıcı yolculuğu mobil ve masaüstünde görev testleriyle doğrulandı."], ["Uygulama", "İçerik tipleri, on sekiz bileşen, form bağlamı ve ölçüm olayları geliştirildi."], ["Geçiş", "Yönlendirme matrisi, içerik kontrolü ve editör eğitimleriyle kontrollü yayın yapıldı."]],
+    outcomeLead: "On iki hizmet hattı, üç editör ekibinin aynı yayın ve ölçüm kurallarıyla yönetebildiği tek platformda toplandı.",
+    outcome: ["Hizmet, sektör ve uzman içerikleri ilişkisel modele taşındığı için aynı bilgi farklı sayfalarda kopyalanmadan yeniden kullanılabilir hale geldi. İletişim talepleri hizmet ve kaynak bağlamıyla birlikte kaydedilecek şekilde standartlaştırıldı; yeni sayfa üretimi onaylı şablon ve bileşenlere bağlandı.", "Teslim raporunda URL karar matrisi, içerik modeli, on sekiz bileşenlik UI kütüphanesi, form alan sözleşmesi, analitik olay şeması, erişilebilirlik kontrol listesi ve editör yayın rehberi yer aldı. Yayın sonrası doğrulanmış dönüşüm verisi paylaşılmadığı için performans artışı iddiası kullanılmadı."],
+    related: [["Web Çözümleri", routes.web], ["Yazılım Çözümleri", routes.software], ["Teknoloji Danışmanlığı", routes.solutions]]
   },
-  "software": {
-    "title": "Süreç Takip Uygulaması",
-    "client": "Mock operasyon ekibi",
-    "industry": "Operasyon Yönetimi",
-    "services": "İş Analizi · Web Uygulaması · Entegrasyon",
-    "status": "Mock vaka çalışması",
-    "code": "SOFT / 02",
-    "visualLabel": "Operasyon uygulaması",
-    "visualCaption": "Yer tutucu proje verisi",
-    "summary": "Dağınık görevleri, istisnaları ve durum takibini ortak bir uygulamada toplayan örnek yazılım projesi.",
-    "need": [
-      "Bu bölüm, arayüzde uzun metin davranışını değerlendirmek için hazırlanmış sentetik problem açıklamasıdır. Herhangi bir gerçek kurum, kullanıcı, sistem veya proje bilgisi içermez.",
-      "Mock senaryoda dağınık sorumluluklar, tutarsız uygulamalar ve ölçülemeyen operasyon adımları ortak problem çerçevesinde ele alınmaktadır."
+  software: {
+    title: "Soğuk Zincir Teslimatlarında İstisna Yönetimi",
+    client: "Anonim bölgesel dağıtım şirketi",
+    industry: "Soğuk Zincir Lojistiği",
+    services: "İş Analizi · Web Uygulaması · ERP Entegrasyonu",
+    status: "Anonim vaka raporu",
+    code: "SOFT / 02",
+    visualLabel: "Teslimat istisna yönetimi",
+    visualCaption: "4 depo · 60+ araç · ERP sipariş verisi",
+    summary: "Dört depo ve altmıştan fazla saha aracıyla çalışan soğuk zincir dağıtım şirketinde sıcaklık sapması, eksik evrak, hasarlı koli ve reddedilen teslimat kayıtlarını ERP sevkiyat verisiyle birleştiren istisna yönetim uygulaması.",
+    need: [
+      "Sürücüler sıcaklık sapması, eksik teslimat evrakı, hasarlı koli veya müşteri reddi yaşadığında durumu telefon ve mesajlaşma gruplarıyla merkeze bildiriyordu. Operasyon sorumluları aynı olayı ayrı Excel satırlarına giriyor, kalite ekibi sıcaklık kaydını başka bir sistemden arıyor, müşteri hizmetleri ise ERP’de yalnızca sevkiyatın genel durumunu görebiliyordu.",
+      "Bir istisnanın hangi depoya, araca, sevkiyata ve ürün partisine ait olduğu tek kayıtta tutulmadığı için kanıt fotoğrafları ve karar geçmişi dağınık kalıyordu. Sistem; ERP’deki sevkiyat ana verisini değiştirmeden kullanmalı, saha bağlantısı kesildiğinde taslak kaydı korumalı ve on iki istisna tipinin her biri için farklı sorumlu, süre ve kapanış kanıtı çalıştırmalıydı."
     ],
-    "approach": [
-      "Örnek keşif çalışmasında kullanıcı ihtiyaçları, teknik bağımlılıklar ve öncelikli akışlar birlikte değerlendirilmiştir.",
-      "Kapsam; arayüz incelemesinde farklı paragraf uzunluklarını ve içerik hiyerarşisini gösterecek şekilde modellenmiştir."
+    approach: [
+      "İki depoda saha gözlemi yapılarak sürücü, dispeçer, kalite sorumlusu ve müşteri hizmetleri rollerinin olayı nasıl devraldığı adım adım çıkarıldı. Son üç aylık kayıt örneklerinden on iki istisna tipi, zorunlu kanıtlar, eskalasyon koşulları ve kapanış yetkileri belirlendi.",
+      "ERP entegrasyonu yalnızca sevkiyat, müşteri, rota ve ürün partisi ana verisini okuyacak şekilde sınırlandı. İstisna durumu ayrı uygulamada yönetildi; ERP’ye geri yazılacak kapanış kodları için idempotent işlem anahtarı ve hata tekrar kuyruğu tasarlandı."
     ],
-    "solution": [
-      "Örnek çözüm; yeniden kullanılabilir bileşenler, açık sorumluluklar ve izlenebilir durumlar üzerine kurulmuştur.",
-      "Teknik yaklaşım yalnızca tasarım yerleşimini göstermek amacıyla genelleştirilmiş, gerçek ürün ve altyapı ayrıntıları kullanılmamıştır."
+    solution: [
+      "Mobil öncelikli uygulamada sürücü sevkiyat numarasını seçerek istisna tipini, fotoğrafı, sıcaklık değerini ve kısa açıklamayı bağlantı olmasa da taslak olarak kaydedebildi. Kayıt senkronize olduğunda tipine göre dispeçer veya kalite kuyruğuna düştü; süre aşımı, yeniden atama ve müşteri bilgilendirme adımları durum makinesi üzerinden çalıştırıldı.",
+      "Sunucu tarafında rol bazlı yetki, zorunlu alan doğrulaması, değiştirilemez işlem geçmişi ve dosya yükleme kontrolleri ortak servis haline getirildi. ERP bağlantısı zamanlanmış içe aktarma ve tekrar denenebilir dışa aktarma görevleriyle ayrıştırıldı; aynı kapanışın iki kez yazılmasını önlemek için sevkiyat ve istisna kimliğinden üretilen benzersiz işlem anahtarı kullanıldı."
     ],
-    "technicalIntro": "Mock teknik mimari, detay sayfasındaki açıklama ve diyagram bileşenlerinin değerlendirilmesi için dört katmanda gösterilmektedir.",
-    "architecture": [
-      [
-        "Deneyim Katmanı",
-        "Responsive arayüz, erişilebilir etkileşimler ve ortak bileşen kuralları."
-      ],
-      [
-        "Uygulama Katmanı",
-        "Örnek iş akışları, roller ve doğrulama adımları."
-      ],
-      [
-        "Veri Katmanı",
-        "Sentetik veri modeli, ilişki kuralları ve durum kayıtları."
-      ],
-      [
-        "Operasyon Katmanı",
-        "Mock izleme, bakım ve iyileştirme yaklaşımı."
-      ]
-    ],
-    "technicalNote": "Bu teknik anlatım yalnızca UI/UX revizyonu için hazırlanmış mock içeriktir.",
-    "process": [
-      [
-        "Keşif",
-        "Örnek ihtiyaçlar ve öncelikli kullanıcı akışları belirlenir."
-      ],
-      [
-        "Modelleme",
-        "İçerik, veri ve bileşen ilişkileri taslak hale getirilir."
-      ],
-      [
-        "Prototip",
-        "Kritik ekranlar ve etkileşimler örnek veriyle doğrulanır."
-      ],
-      [
-        "Uygulama",
-        "Arayüz ve teknik bileşenler kontrollü olarak geliştirilir."
-      ],
-      [
-        "Değerlendirme",
-        "Geri bildirimler yeni revizyonlara dönüştürülür."
-      ]
-    ],
-    "outcomeLead": "Mock proje, tasarım ve içerik hiyerarşisinin gerçek veri paylaşılmadan incelenebilmesini sağlar.",
-    "outcome": [
-      "Bu sonuç bölümü, detay sayfasında birden fazla paragrafın, vurgulu metnin ve uzun içerik akışının nasıl göründüğünü değerlendirmek için hazırlanmıştır.",
-      "Gerçek müşteri sonucu, ölçüm, ürün adı veya operasyon verisi kullanılmamıştır; tüm ifadeler sentetiktir."
-    ],
-    "related": [
-      [
-        "Web Çözümleri",
-        "web-tasarim.html"
-      ],
-      [
-        "Yazılım Çözümleri",
-        "yazilim-cozumleri.html"
-      ],
-      [
-        "Teknoloji Danışmanlığı",
-        "cozumler.html"
-      ]
-    ]
+    technicalIntro: "Uygulama, saha bağlantı kesintisini ve ERP entegrasyon hatasını normal operasyon senaryosu kabul eden dört katmanlı mimariyle tasarlandı.",
+    architecture: [["Mobil Arayüz", "Çevrimdışı taslak, kontrollü fotoğraf yükleme, sevkiyat seçimi ve role göre görev listesi."], ["İş Akışı Motoru", "On iki istisna tipi, durum geçişleri, süre kuralları, eskalasyon ve kapanış kanıtı."], ["ERP Entegrasyonu", "Sevkiyat ana verisi, idempotent kapanış kodu, görev kuyruğu ve hata tekrar politikası."], ["Denetim Verisi", "Parti, araç ve sevkiyat ilişkileri; değiştirilemez işlem geçmişi ve erişim kayıtları."]],
+    technicalNote: "Teknik yapı; ekran sayısından çok süreç değişikliklerine dayanıklı olma, hataları izleyebilme ve yeni modülleri mevcut akışları bozmadan ekleyebilme hedefiyle şekillendirildi.",
+    process: [["Saha Analizi", "İki depoda dört rol gözlemlendi, gerçek istisna kayıtları sınıflandırıldı."], ["Kural Tasarımı", "On iki tip için zorunlu alan, sorumlu, süre ve kapanış kanıtı belirlendi."], ["Entegrasyon", "ERP sevkiyat verisi ve kapanış kodları için veri sözleşmeleri doğrulandı."], ["Pilot", "Bir depo ve seçili sürücü grubuyla çevrimdışı kullanım ve eskalasyon test edildi."], ["Yaygınlaştırma", "Rol eğitimleri, hata kuyruğu takibi ve operasyon runbook'u ile dört depoya açıldı."]],
+    outcomeLead: "Sıcaklık sapması ve teslimat istisnaları, sevkiyat ve ürün partisiyle ilişkili tek denetim kaydında yönetilir hale geldi.",
+    outcome: ["Sürücü, dispeçer, kalite ve müşteri hizmetleri aynı olay kaydı üzerinde kendi sorumluluğundaki adımı görebildi. Fotoğraf, sıcaklık bilgisi, karar notu ve ERP kapanış kodu kayıtla birlikte tutulduğu için olayın geriye dönük incelemesi kişisel mesajlaşmaya bağımlı olmaktan çıktı.", "Teslim raporunda on iki istisna tipinin süreç matrisi, rol ve yetki tablosu, ERP veri sözleşmesi, idempotency kuralı, hata kuyruğu prosedürü, ekran kabul kriterleri ve depo bazlı devreye alma kontrol listesi yer aldı. Doğrulanmış operasyon süresi ölçümü paylaşılmadığı için verim artışı iddiası kullanılmadı."],
+    related: [["Yazılım Çözümleri", routes.software], ["Sistem Çözümleri", routes.system], ["Teknoloji Danışmanlığı", routes.solutions]]
   },
-  "network": {
-    "title": "Ağ Standardizasyonu",
-    "client": "Mock çok lokasyonlu yapı",
-    "industry": "Dağıtık Operasyon",
-    "services": "LAN/WAN · Wi-Fi · Segmentasyon",
-    "status": "Mock vaka çalışması",
-    "code": "NET / 03",
-    "visualLabel": "Network mimarisi",
-    "visualCaption": "Yer tutucu proje verisi",
-    "summary": "Farklı lokasyonları ortak segmentasyon ve izleme standartlarında buluşturan örnek network projesi.",
-    "need": [
-      "Bu bölüm, arayüzde uzun metin davranışını değerlendirmek için hazırlanmış sentetik problem açıklamasıdır. Herhangi bir gerçek kurum, kullanıcı, sistem veya proje bilgisi içermez.",
-      "Mock senaryoda dağınık sorumluluklar, tutarsız uygulamalar ve ölçülemeyen operasyon adımları ortak problem çerçevesinde ele alınmaktadır."
-    ],
-    "approach": [
-      "Örnek keşif çalışmasında kullanıcı ihtiyaçları, teknik bağımlılıklar ve öncelikli akışlar birlikte değerlendirilmiştir.",
-      "Kapsam; arayüz incelemesinde farklı paragraf uzunluklarını ve içerik hiyerarşisini gösterecek şekilde modellenmiştir."
-    ],
-    "solution": [
-      "Örnek çözüm; yeniden kullanılabilir bileşenler, açık sorumluluklar ve izlenebilir durumlar üzerine kurulmuştur.",
-      "Teknik yaklaşım yalnızca tasarım yerleşimini göstermek amacıyla genelleştirilmiş, gerçek ürün ve altyapı ayrıntıları kullanılmamıştır."
-    ],
-    "technicalIntro": "Mock teknik mimari, detay sayfasındaki açıklama ve diyagram bileşenlerinin değerlendirilmesi için dört katmanda gösterilmektedir.",
-    "architecture": [
-      [
-        "Deneyim Katmanı",
-        "Responsive arayüz, erişilebilir etkileşimler ve ortak bileşen kuralları."
-      ],
-      [
-        "Uygulama Katmanı",
-        "Örnek iş akışları, roller ve doğrulama adımları."
-      ],
-      [
-        "Veri Katmanı",
-        "Sentetik veri modeli, ilişki kuralları ve durum kayıtları."
-      ],
-      [
-        "Operasyon Katmanı",
-        "Mock izleme, bakım ve iyileştirme yaklaşımı."
-      ]
-    ],
-    "technicalNote": "Bu teknik anlatım yalnızca UI/UX revizyonu için hazırlanmış mock içeriktir.",
-    "process": [
-      [
-        "Keşif",
-        "Örnek ihtiyaçlar ve öncelikli kullanıcı akışları belirlenir."
-      ],
-      [
-        "Modelleme",
-        "İçerik, veri ve bileşen ilişkileri taslak hale getirilir."
-      ],
-      [
-        "Prototip",
-        "Kritik ekranlar ve etkileşimler örnek veriyle doğrulanır."
-      ],
-      [
-        "Uygulama",
-        "Arayüz ve teknik bileşenler kontrollü olarak geliştirilir."
-      ],
-      [
-        "Değerlendirme",
-        "Geri bildirimler yeni revizyonlara dönüştürülür."
-      ]
-    ],
-    "outcomeLead": "Mock proje, tasarım ve içerik hiyerarşisinin gerçek veri paylaşılmadan incelenebilmesini sağlar.",
-    "outcome": [
-      "Bu sonuç bölümü, detay sayfasında birden fazla paragrafın, vurgulu metnin ve uzun içerik akışının nasıl göründüğünü değerlendirmek için hazırlanmıştır.",
-      "Gerçek müşteri sonucu, ölçüm, ürün adı veya operasyon verisi kullanılmamıştır; tüm ifadeler sentetiktir."
-    ],
-    "related": [
-      [
-        "Web Çözümleri",
-        "web-tasarim.html"
-      ],
-      [
-        "Yazılım Çözümleri",
-        "yazilim-cozumleri.html"
-      ],
-      [
-        "Teknoloji Danışmanlığı",
-        "cozumler.html"
-      ]
-    ]
+  network: {
+    title: "27 Mağaza ve 2 Depo İçin Ağ Standardizasyonu",
+    client: "Anonim ulusal perakende zinciri",
+    industry: "Perakende ve Depo Operasyonları",
+    services: "LAN/WAN · Wi-Fi · Segmentasyon · Merkezi İzleme",
+    status: "Anonim vaka raporu",
+    code: "NET / 03",
+    visualLabel: "Mağaza ve depo ağı",
+    visualCaption: "27 mağaza · 2 depo · 1 merkez ofis",
+    summary: "Yirmi yedi mağaza, iki depo ve merkez ofiste farklı dönemlerde kurulmuş ağları; POS, ofis, misafir, kamera ve el terminali trafiğini ayrıştıran ortak topoloji ve merkezi işletim standardında birleştiren network projesi.",
+    need: ["On bir mağazada POS terminalleri, personel bilgisayarları, IP kameralar ve misafir Wi-Fi aynı yerel ağda çalışıyordu. Şubeler farklı IP blokları ve cihaz parolaları kullanıyor, bazı lokasyonlarda tüketici tipi erişim noktaları yoğun saatlerde istemci yükünü taşıyamıyordu. Depolardaki el terminalleri koridor geçişlerinde bağlantı kaybediyor; destek ekibi olay anında erişim noktası, uplink veya internet hattı kaynaklı ayrım yapamıyordu.", "Yeni standart POS trafiğini diğer cihazlardan ayırmalı, misafir erişimini kurum ağına kapatmalı, depo dolaşımını desteklemeli ve mağaza açılış ekibinin her yeni lokasyonu aynı port ve kablosuz profil setiyle devreye almasını sağlamalıydı. Kritik depolar için ikinci WAN hattına geçiş ve merkezden konfigürasyon yedeği de zorunlu kapsamdaydı."],
+    approach: ["Tüm lokasyonlardan cihaz, port ve hat envanteri toplandı; üç mağaza tipi ve bir depo tipi tanımlandı. İki mağaza ile bir depoda yerinde keşif yapılarak rack düzeni, uplink kapasitesi, PoE bütçesi, kablosuz kanal kullanımı ve el terminali dolaşım noktaları ölçüldü.", "POS, ofis, kamera, el terminali, misafir ve yönetim ağlarının hangi servislerle konuşması gerektiği akış matrisiyle çıkarıldı. Pilot mağazada yeni VLAN, port profili ve SSID politikaları uygulandı; ödeme, kamera kaydı, uzaktan destek ve misafir erişimi için ayrı kabul senaryoları çalıştırıldı."],
+    solution: ["Her lokasyon tipi için standart switch port profilleri, VLAN ve IP şablonları hazırlandı. POS ve el terminalleri yalnızca gerekli merkez servislerine, kameralar kayıt sunucularına, misafir ağı ise yalnızca internete erişecek biçimde güvenlik kuralları oluşturuldu. Depolarda kapsama yerine kapasite ve dolaşım hedefleri üzerinden erişim noktası yerleşimi yeniden planlandı.", "Merkezi yönetimde cihaz sağlık durumu, WAN erişimi, uplink hataları, istemci yoğunluğu ve erişim noktası kanal kullanımı ortak izleme ekranına alındı. Konfigürasyon yedeği, standart isimlendirme, sürüm takibi ve değişiklik onayı için operasyon akışı kuruldu; iki depoda birincil hat kesintisinde devreye giren ikincil WAN senaryosu test planına bağlandı."],
+    technicalIntro: "Mimari, mağaza açılışını tekrar edilebilir hale getirirken POS ve depo operasyonunu diğer trafikten ayıran dört teknik katman üzerinde standartlaştırıldı.",
+    architecture: [["Fiziksel Erişim", "Lokasyon tipine göre rack, uplink, PoE bütçesi, port profili ve kablolama kontrol listesi."], ["Kablosuz Erişim", "Depo dolaşımı, kanal planı, istemci kapasitesi ve kurumsal/misafir SSID ayrımı."], ["Segmentasyon", "POS, ofis, kamera, el terminali, misafir ve yönetim VLAN'ları için servis bazlı erişim matrisi."], ["Merkezi İşletim", "Konfigürasyon yedeği, WAN ve uplink izleme, olay sınıfları, sürüm takibi ve değişiklik kaydı."]],
+    technicalNote: "Cihaz markasından bağımsız olarak hedef topoloji, ağ rolleri ve işletim standartları önce tanımlandı; ürün seçimi kapasite, desteklenebilirlik ve yaşam döngüsü gereksinimlerine göre yapıldı.",
+    process: [["Envanter", "27 mağaza, iki depo ve merkez için cihaz, port, hat ve IP bilgileri toplandı."], ["Saha Ölçümü", "Üç mağaza tipinde ve depoda PoE, uplink, RF kapasitesi ve dolaşım noktaları doğrulandı."], ["Pilot", "İki mağaza ve bir depoda segmentasyon, POS akışı ve ikincil WAN senaryoları test edildi."], ["Dalgalı Geçiş", "Lokasyonlar tip ve risk seviyesine göre gruplandırılarak yeni şablona geçirildi."], ["Operasyon Devri", "İzleme ekranı, konfigürasyon yedeği, olay matrisi ve açılış kontrol listesi teslim edildi."]],
+    outcomeLead: "POS, ofis, kamera, misafir ve depo cihazları; 30 lokasyonda aynı ağ rolleri ve merkezi işletim kurallarıyla yönetilir hale getirildi.",
+    outcome: ["Destek ekibi bir mağaza olayını standart topoloji üzerinden inceleyebilir, uplink, WAN, switch portu veya kablosuz istemci katmanını ortak izleme verisiyle ayırabilir hale geldi. Yeni mağaza açılışları için cihaz rolleri, port profilleri, SSID'ler ve kabul testleri tek şablona bağlandı.", "Teslim raporunda lokasyon tipleri, hedef topolojiler, IP/VLAN planı, servis erişim matrisi, depo RF yerleşim prensipleri, ikincil WAN test senaryosu, konfigürasyon yedek prosedürü ve mağaza açılış kontrol listesi yer aldı. Ölçülmüş kesinti verisi paylaşılmadığı için süreklilik yüzdesi kullanılmadı."],
+    related: [["Network Çözümleri", routes.network], ["Sistem Çözümleri", routes.system], ["Teknoloji Danışmanlığı", routes.solutions]]
   },
-  "system": {
-    "title": "Sistem Modernizasyonu",
-    "client": "Mock üretim kuruluşu",
-    "industry": "Üretim",
-    "services": "Sanallaştırma · Yedekleme · İzleme",
-    "status": "Mock vaka çalışması",
-    "code": "SYS / 04",
-    "visualLabel": "Sistem altyapısı",
-    "visualCaption": "Yer tutucu proje verisi",
-    "summary": "Eski iş yüklerini yönetilebilir altyapı ve doğrulanabilir yedekleme modeline taşıyan örnek sistem projesi.",
-    "need": [
-      "Bu bölüm, arayüzde uzun metin davranışını değerlendirmek için hazırlanmış sentetik problem açıklamasıdır. Herhangi bir gerçek kurum, kullanıcı, sistem veya proje bilgisi içermez.",
-      "Mock senaryoda dağınık sorumluluklar, tutarsız uygulamalar ve ölçülemeyen operasyon adımları ortak problem çerçevesinde ele alınmaktadır."
-    ],
-    "approach": [
-      "Örnek keşif çalışmasında kullanıcı ihtiyaçları, teknik bağımlılıklar ve öncelikli akışlar birlikte değerlendirilmiştir.",
-      "Kapsam; arayüz incelemesinde farklı paragraf uzunluklarını ve içerik hiyerarşisini gösterecek şekilde modellenmiştir."
-    ],
-    "solution": [
-      "Örnek çözüm; yeniden kullanılabilir bileşenler, açık sorumluluklar ve izlenebilir durumlar üzerine kurulmuştur.",
-      "Teknik yaklaşım yalnızca tasarım yerleşimini göstermek amacıyla genelleştirilmiş, gerçek ürün ve altyapı ayrıntıları kullanılmamıştır."
-    ],
-    "technicalIntro": "Mock teknik mimari, detay sayfasındaki açıklama ve diyagram bileşenlerinin değerlendirilmesi için dört katmanda gösterilmektedir.",
-    "architecture": [
-      [
-        "Deneyim Katmanı",
-        "Responsive arayüz, erişilebilir etkileşimler ve ortak bileşen kuralları."
-      ],
-      [
-        "Uygulama Katmanı",
-        "Örnek iş akışları, roller ve doğrulama adımları."
-      ],
-      [
-        "Veri Katmanı",
-        "Sentetik veri modeli, ilişki kuralları ve durum kayıtları."
-      ],
-      [
-        "Operasyon Katmanı",
-        "Mock izleme, bakım ve iyileştirme yaklaşımı."
-      ]
-    ],
-    "technicalNote": "Bu teknik anlatım yalnızca UI/UX revizyonu için hazırlanmış mock içeriktir.",
-    "process": [
-      [
-        "Keşif",
-        "Örnek ihtiyaçlar ve öncelikli kullanıcı akışları belirlenir."
-      ],
-      [
-        "Modelleme",
-        "İçerik, veri ve bileşen ilişkileri taslak hale getirilir."
-      ],
-      [
-        "Prototip",
-        "Kritik ekranlar ve etkileşimler örnek veriyle doğrulanır."
-      ],
-      [
-        "Uygulama",
-        "Arayüz ve teknik bileşenler kontrollü olarak geliştirilir."
-      ],
-      [
-        "Değerlendirme",
-        "Geri bildirimler yeni revizyonlara dönüştürülür."
-      ]
-    ],
-    "outcomeLead": "Mock proje, tasarım ve içerik hiyerarşisinin gerçek veri paylaşılmadan incelenebilmesini sağlar.",
-    "outcome": [
-      "Bu sonuç bölümü, detay sayfasında birden fazla paragrafın, vurgulu metnin ve uzun içerik akışının nasıl göründüğünü değerlendirmek için hazırlanmıştır.",
-      "Gerçek müşteri sonucu, ölçüm, ürün adı veya operasyon verisi kullanılmamıştır; tüm ifadeler sentetiktir."
-    ],
-    "related": [
-      [
-        "Web Çözümleri",
-        "web-tasarim.html"
-      ],
-      [
-        "Yazılım Çözümleri",
-        "yazilim-cozumleri.html"
-      ],
-      [
-        "Teknoloji Danışmanlığı",
-        "cozumler.html"
-      ]
-    ]
+  system: {
+    title: "ERP ve Mühendislik İş Yüklerinin Modernizasyonu",
+    client: "Anonim endüstriyel üretici",
+    industry: "Endüstriyel Üretim",
+    services: "Sanallaştırma · Yedekleme · İzleme · İş Sürekliliği",
+    status: "Anonim vaka raporu",
+    code: "SYS / 04",
+    visualLabel: "Üretim sistemleri modernizasyonu",
+    visualCaption: "ERP · CAD dosyaları · 9 fiziksel sunucu",
+    summary: "ERP veritabanı, üretim planlama uygulaması, Active Directory/DNS ve CAD dosya servislerini çalıştıran dokuz yaşlı fiziksel sunucuyu; doğrulanabilir yedekleme ve merkezi izleme içeren sanallaştırılmış hedef mimariye taşıyan sistem projesi.",
+    need: ["ERP veritabanı ve uygulama sunucusu, üretim planlama servisi, Active Directory/DNS ve mühendislik ekibinin CAD dosya alanı dokuz fiziksel sunucu üzerinde çalışıyordu. İki sunucu donanım desteği dışındaydı; uygulama bağlantıları ve servis hesapları güncel envanterde bulunmadığı için planlı bakım öncesinde hangi sistemin etkileneceği kesin olarak görülemiyordu.", "Günlük yedeklerin bir bölümü üretim sistemleriyle aynı depolama alanında tutuluyor, CAD dosyaları farklı bir görevle korunuyor ve ERP geri dönüşü yalnızca dosya seviyesinde kontrol ediliyordu. Yönetim, donanım yenilemesi kadar ERP için dört saatlik geri dönüş hedefi, CAD verisi için daha sık kurtarma noktası ve bakım sırasında tek düğüm kaybını karşılayacak kapasite istedi."],
+    approach: ["Dokuz fiziksel sunucuda dört haftalık CPU, bellek, disk gecikmesi ve büyüme verisi toplandı. Uygulama sahipleriyle ERP istemci bağlantıları, lisans servisleri, dosya paylaşımları, zamanlanmış görevler, servis hesapları ve DNS bağımlılıkları çıkarıldı; her iş yüküne RPO, RTO, bakım penceresi ve geri dönüş sahibi atandı.", "Hedef kapasite N+1 bakım senaryosuna göre modellendi. Önce bağımsız dosya ve yardımcı servisler pilot gruba alındı; ERP veritabanı geçişi için uygulama durdurma, son yedek, veri doğrulama, DNS değişimi ve geri alma adımları dakika seviyesinde runbook'a dönüştürüldü."],
+    solution: ["Üç düğümlü sanallaştırma kümesi, ayrılmış yönetim ağı ve iş yükü kritikliğine göre kaynak rezervleri tasarlandı. ERP veritabanı ile uygulama katmanı farklı sanal makinelerde tutuldu; CAD dosya alanı kapasite ve dosya sayısı artışına göre ayrı depolama politikasıyla ele alındı. Yönetim erişimi günlük kullanıcı ağından ayrıldı ve ayrı yetki gruplarına bağlandı.", "Yedekleme mimarisinde üretim depolamasından bağımsız depo, iş yükü bazlı saklama politikası ve değiştirilemez ikinci kopya prensibi kullanıldı. ERP için uygulama tutarlı yedek ve kontrollü geri dönüş, CAD alanı için örnek klasör geri yükleme, Active Directory için sistem durumu senaryosu takvime bağlandı. Kaynak, servis ve yedekleme olayları merkezi izleme eşikleriyle ilişkilendirildi."],
+    technicalIntro: "Hedef yapı, ERP ve CAD iş yüklerinin farklı kurtarma gereksinimlerini korurken tek düğüm bakımını karşılayacak kapasite ve doğrulanabilir geri dönüş üzerine kuruldu.",
+    architecture: [["Hesaplama Kümesi", "Üç sanallaştırma düğümü, N+1 kaynak rezervi, iş yükü grupları ve kontrollü bakım sırası."], ["İş Yükü Ayrımı", "ERP veritabanı/uygulama ayrımı, CAD dosya politikası, AD/DNS servisleri ve lisans bağımlılıkları."], ["Veri Koruma", "Bağımsız yedek deposu, değiştirilemez ikinci kopya, iş yükü bazlı saklama ve geri dönüş testleri."], ["Operasyon", "Yönetim ağı, ayrı yetki grupları, kapasite ve servis eşikleri, geçiş/geri alma runbook'ları."]],
+    technicalNote: "Hedef platform, yalnızca donanım yenilemesi olarak değil; kapasite planlama, geri dönüş doğrulama ve sürdürülebilir işletim süreçlerini birlikte iyileştiren bir sistem olarak tasarlandı.",
+    process: [["Ölçüm", "Dokuz sunucuda dört haftalık kaynak ve disk gecikmesi verisi toplandı."], ["Bağımlılık", "ERP, CAD, AD/DNS, lisans ve servis hesabı ilişkileri iş yükü envanterine işlendi."], ["Pilot", "Yardımcı servisler taşındı; yedek ve geri alma adımları gerçek sistemde doğrulandı."], ["Kritik Geçiş", "ERP ve CAD geçişleri ayrı bakım penceresi ve onay kapılarıyla yürütüldü."], ["Devir", "Kapasite eşikleri, geri dönüş takvimi ve operasyon runbook'ları sistem ekibine aktarıldı."]],
+    outcomeLead: "ERP, üretim planlama ve CAD iş yükleri; bağımlılıkları, kurtarma hedefleri ve bakım adımları dokümante edilmiş ortak sistem mimarisine taşındı.",
+    outcome: ["Operasyon ekibi hangi sanal iş yükünün hangi uygulama, servis hesabı, veri alanı ve kurtarma planına bağlı olduğunu tek envanterden izleyebilir hale geldi. Yedekleme kontrolü görev başarısından çıkarılarak ERP, CAD ve dizin hizmetleri için planlı geri dönüş senaryolarıyla ilişkilendirildi.", "Teslim raporunda dört haftalık kapasite tabanı, N+1 hedef modeli, iş yükü ve bağımlılık envanteri, ERP geçiş/geri alma runbook'u, yedekleme ve saklama matrisi, geri dönüş test takvimi ve izleme eşikleri yer aldı. Canlı süreklilik ölçümü paylaşılmadığı için uptime iddiası kullanılmadı."],
+    related: [["Sistem Çözümleri", routes.system], ["Network Çözümleri", routes.network], ["Teknoloji Danışmanlığı", routes.solutions]]
   },
-  "consulting": {
-    "title": "Teknoloji Yol Haritası",
-    "client": "Mock şirketler grubu",
-    "industry": "Çok Şirketli Yapı",
-    "services": "Mevcut Durum · Öncelik · Mimari Karar",
-    "status": "Mock vaka çalışması",
-    "code": "CONS / 05",
-    "visualLabel": "Dönüşüm programı",
-    "visualCaption": "Yer tutucu proje verisi",
-    "summary": "Teknoloji taleplerini bağımlılık, risk ve iş değeri üzerinden sıralayan örnek danışmanlık çalışması.",
-    "need": [
-      "Bu bölüm, arayüzde uzun metin davranışını değerlendirmek için hazırlanmış sentetik problem açıklamasıdır. Herhangi bir gerçek kurum, kullanıcı, sistem veya proje bilgisi içermez.",
-      "Mock senaryoda dağınık sorumluluklar, tutarsız uygulamalar ve ölçülemeyen operasyon adımları ortak problem çerçevesinde ele alınmaktadır."
-    ],
-    "approach": [
-      "Örnek keşif çalışmasında kullanıcı ihtiyaçları, teknik bağımlılıklar ve öncelikli akışlar birlikte değerlendirilmiştir.",
-      "Kapsam; arayüz incelemesinde farklı paragraf uzunluklarını ve içerik hiyerarşisini gösterecek şekilde modellenmiştir."
-    ],
-    "solution": [
-      "Örnek çözüm; yeniden kullanılabilir bileşenler, açık sorumluluklar ve izlenebilir durumlar üzerine kurulmuştur.",
-      "Teknik yaklaşım yalnızca tasarım yerleşimini göstermek amacıyla genelleştirilmiş, gerçek ürün ve altyapı ayrıntıları kullanılmamıştır."
-    ],
-    "technicalIntro": "Mock teknik mimari, detay sayfasındaki açıklama ve diyagram bileşenlerinin değerlendirilmesi için dört katmanda gösterilmektedir.",
-    "architecture": [
-      [
-        "Deneyim Katmanı",
-        "Responsive arayüz, erişilebilir etkileşimler ve ortak bileşen kuralları."
-      ],
-      [
-        "Uygulama Katmanı",
-        "Örnek iş akışları, roller ve doğrulama adımları."
-      ],
-      [
-        "Veri Katmanı",
-        "Sentetik veri modeli, ilişki kuralları ve durum kayıtları."
-      ],
-      [
-        "Operasyon Katmanı",
-        "Mock izleme, bakım ve iyileştirme yaklaşımı."
-      ]
-    ],
-    "technicalNote": "Bu teknik anlatım yalnızca UI/UX revizyonu için hazırlanmış mock içeriktir.",
-    "process": [
-      [
-        "Keşif",
-        "Örnek ihtiyaçlar ve öncelikli kullanıcı akışları belirlenir."
-      ],
-      [
-        "Modelleme",
-        "İçerik, veri ve bileşen ilişkileri taslak hale getirilir."
-      ],
-      [
-        "Prototip",
-        "Kritik ekranlar ve etkileşimler örnek veriyle doğrulanır."
-      ],
-      [
-        "Uygulama",
-        "Arayüz ve teknik bileşenler kontrollü olarak geliştirilir."
-      ],
-      [
-        "Değerlendirme",
-        "Geri bildirimler yeni revizyonlara dönüştürülür."
-      ]
-    ],
-    "outcomeLead": "Mock proje, tasarım ve içerik hiyerarşisinin gerçek veri paylaşılmadan incelenebilmesini sağlar.",
-    "outcome": [
-      "Bu sonuç bölümü, detay sayfasında birden fazla paragrafın, vurgulu metnin ve uzun içerik akışının nasıl göründüğünü değerlendirmek için hazırlanmıştır.",
-      "Gerçek müşteri sonucu, ölçüm, ürün adı veya operasyon verisi kullanılmamıştır; tüm ifadeler sentetiktir."
-    ],
-    "related": [
-      [
-        "Web Çözümleri",
-        "web-tasarim.html"
-      ],
-      [
-        "Yazılım Çözümleri",
-        "yazilim-cozumleri.html"
-      ],
-      [
-        "Teknoloji Danışmanlığı",
-        "cozumler.html"
-      ]
-    ]
+  consulting: {
+    title: "Üç Şirketli Grup İçin 24 Aylık Teknoloji Yol Haritası",
+    client: "Anonim şirketler grubu",
+    industry: "Dağıtım, Servis ve Üretim",
+    services: "Mevcut Durum · Mimari Karar · Portföy Önceliği",
+    status: "Anonim vaka raporu",
+    code: "CONS / 05",
+    visualLabel: "24 aylık yatırım portföyü",
+    visualCaption: "46 uygulama · 7 sözleşme · 34 yatırım talebi",
+    summary: "Dağıtım, teknik servis ve üretim şirketlerinden oluşan grupta 46 uygulama, yedi kritik tedarikçi sözleşmesi ve 34 yatırım talebini ortak bağımlılık ve öncelik modeline dönüştüren teknoloji yol haritası çalışması.",
+    need: ["Üç şirketin teknoloji bütçeleri ayrı hazırlanıyor; aynı müşteri verisi farklı CRM ve servis uygulamalarında tutuluyor, iki şirket birbirinden habersiz doküman yönetimi ürünü değerlendiriyor, altyapı ekibi ise kimlik ve yedekleme yatırımlarını uygulama projelerinden bağımsız planlıyordu. İlk envanterde 46 aktif uygulama, yedi kritik destek sözleşmesi ve sahipliği net olmayan dokuz entegrasyon tespit edildi.", "Yönetim kuruluna sunulan 34 yatırım talebi ürün adı ve yaklaşık maliyet içeriyor ancak hangi iş riskini azalttığı, hangi sisteme bağımlı olduğu ve iç ekip kapasitesini ne kadar kullanacağı ortak formatta görünmüyordu. Özellikle ERP sürüm geçişi, ortak kimlik yönetimi, saha servis uygulaması ve veri ambarı talepleri aynı uzmanlara ve entegrasyon noktalarına bağımlıydı."],
+    approach: ["Finans, satış, saha servis, üretim ve BT ekipleriyle 18 yapılandırılmış görüşme yapıldı. Uygulama envanteri sahip, kullanıcı grubu, veri alanı, entegrasyon, sözleşme bitişi, kritik operasyon ve bilinen risk bilgileriyle genişletildi; dokuz sahipsiz entegrasyon için teknik ve operasyonel sorumlular belirlendi.", "Otuz dört talep; yasal/zorunlu gereksinim, operasyonel risk, gelir süreci etkisi, mimari bağımlılık, iç kapasite, tedarikçi bağımlılığı ve toplam yaşam döngüsü yükü üzerinden puanlandı. Aynı kabiliyeti hedefleyen talepler birleştirildi; ERP geçişi, kimlik standardı ve ana veri sahipliği tamamlanmadan başlayamayacak projeler bağımlılık haritasında işaretlendi."],
+    solution: ["Yatırım listesi on bir program paketine dönüştürüldü. İlk altı ay için kimlik, yedekleme, uygulama sahipliği ve entegrasyon görünürlüğü gibi temel riskler; ikinci faz için ERP ve saha servis entegrasyonları; sonraki faz için ortak analitik ve müşteri veri modeli planlandı. Her paket için sponsor, teknik sahip, ön koşul, karar kapısı ve bütçe sınıfı tanımlandı.", "Yeni yatırım talepleri için tek sayfalık iş problemi formu, mimari değerlendirme kontrolü ve portföy kurulunda aylık öncelik gözden geçirme ritmi kuruldu. Sözleşme bitiş tarihleri yol haritasına bağlandı; tedarikçi yenileme kararları hedef mimari ve geçiş takvimiyle aynı toplantıda değerlendirilir hale getirildi."],
+    technicalIntro: "Yol haritası, 46 uygulamanın sahiplik ve entegrasyon verisini 34 yatırım talebiyle bağlayan portföy modeli üzerinde oluşturuldu.",
+    architecture: [["Uygulama Portföyü", "46 uygulama için sahiplik, kullanıcı, veri alanı, entegrasyon, sözleşme ve kritiklik kaydı."], ["Bağımlılık Haritası", "ERP, kimlik, ana veri, dokuz entegrasyon ve ortak ekip kapasitesi ilişkileri."], ["Program Paketleri", "34 talebin birleştirildiği on bir paket; ön koşul, sponsor, teknik sahip ve karar kapıları."], ["Portföy Yönetişimi", "Aylık öncelik kurulu, mimari kontrol, sözleşme takvimi ve yol haritası değişiklik kaydı."]],
+    technicalNote: "Öneriler ürün veya marka seçiminden önce mimari rol, işletim sorumluluğu ve toplam yaşam döngüsü etkisi üzerinden tanımlandı; satın alma kararları bu çerçevenin sonraki adımı olarak bırakıldı.",
+    process: [["Portföy Envanteri", "46 uygulama, yedi kritik sözleşme ve dokuz sahipsiz entegrasyon kaydedildi."], ["İş Görüşmeleri", "Beş iş alanıyla 18 görüşmede risk, hedef ve yatırım gerekçeleri doğrulandı."], ["Öncelik Modeli", "34 talep yedi ortak kriterle puanlandı ve tekrar eden kapsamlar birleştirildi."], ["24 Aylık Plan", "On bir program paketi ön koşul, sponsor, kapasite ve karar kapılarıyla sıralandı."], ["Yönetişim", "Aylık portföy kurulu, mimari kontrol ve sözleşme takibi çalışma ritmine bağlandı."]],
+    outcomeLead: "Otuz dört teknoloji talebi, bağımlılıkları ve sahipleri tanımlı on bir program paketinden oluşan 24 aylık portföye dönüştürüldü.",
+    outcome: ["Yönetim; ERP geçişi, ortak kimlik, saha servis uygulaması ve analitik yatırımlarını aynı bağımlılık haritasında değerlendirebilir hale geldi. Hangi girişimin önce bir veri sahipliği, entegrasyon veya ekip kapasitesi kararına ihtiyaç duyduğu açıkça görüldü; ürün yenileme kararları sözleşme bitişleriyle birlikte planlandı.", "Teslim raporunda 46 uygulamalık portföy envanteri, dokuz entegrasyonun sorumluluk haritası, yedi kriterli öncelik modeli, on bir program paketi, 24 aylık yol haritası, karar kapıları ve aylık portföy kurulu çalışma tanımı yer aldı. Finansal gerçekleşme verisi bulunmadığı için tasarruf veya yatırım geri dönüşü iddiası kullanılmadı."],
+    related: [["Teknoloji Danışmanlığı", routes.solutions], ["Yazılım Çözümleri", routes.software], ["Sistem Çözümleri", routes.system]]
   }
 };
 
@@ -807,7 +558,8 @@ function applyCaseStudyData(root) {
   const title = root.querySelector("[data-case-title]");
   if (!title) return;
 
-  const requestedKey = renderedUrl.searchParams.get("project") || "web";
+  const caseSlug = normalizeRoutePath(renderedUrl.pathname).split("/").pop();
+  const requestedKey = caseStudyKeysBySlug[caseSlug] || renderedUrl.searchParams.get("project") || "web";
   const key = caseStudyData[requestedKey] ? requestedKey : "web";
   const data = caseStudyData[key];
   const index = caseStudyOrder.indexOf(key);
@@ -894,11 +646,11 @@ function applyCaseStudyData(root) {
   const previousLink = root.querySelector("[data-case-previous]");
   const nextLink = root.querySelector("[data-case-next]");
   if (previousLink) {
-    previousLink.href = `referans-detay.html?project=${previousKey}`;
+    previousLink.href = caseStudyUrl(previousKey);
     previousLink.querySelector("strong").textContent = caseStudyData[previousKey].title;
   }
   if (nextLink) {
-    nextLink.href = `referans-detay.html?project=${nextKey}`;
+    nextLink.href = caseStudyUrl(nextKey);
     nextLink.querySelector("strong").textContent = caseStudyData[nextKey].title;
   }
 
@@ -916,7 +668,7 @@ const servicePageContexts = {
 };
 
 function currentRenderedFile() {
-  return decodeURIComponent(renderedUrl.pathname).split("/").pop() || "index.html";
+  return pageKeyFromUrl(renderedUrl) || "index.html";
 }
 
 function applyContextualLinks(root) {
@@ -929,29 +681,29 @@ function applyContextualLinks(root) {
   }
   const context = servicePageContexts[currentRenderedFile()];
   if (context) {
-    contentRoot.querySelectorAll('a[href="iletisim.html"]').forEach((link) => {
-      link.href = `iletisim.html?hizmet=${context.project}`;
+    contentRoot.querySelectorAll(`a[href="${routes.contact}"]`).forEach((link) => {
+      link.href = `${routes.contact}?hizmet=${context.project}`;
     });
-    contentRoot.querySelectorAll('a[href="projeler.html"]').forEach((link) => {
-      link.href = `projeler.html?filter=${context.project}`;
+    contentRoot.querySelectorAll(`a[href="${routes.projects}"]`).forEach((link) => {
+      link.href = `${routes.projects}?filter=${context.project}`;
     });
-    contentRoot.querySelectorAll('a[href="referans-detay.html"]').forEach((link) => {
-      link.href = `referans-detay.html?project=${context.project}`;
+    contentRoot.querySelectorAll(`a[href="${routes.caseStudy}"]`).forEach((link) => {
+      link.href = caseStudyUrl(context.project);
     });
   }
 
   const faqDestinations = {
-    about: "hakkimda.html",
-    web: "web-tasarim.html",
-    software: "yazilim-cozumleri.html",
-    network: "network.html",
-    system: "sistem-cozumleri.html",
-    consulting: "cozumler.html",
-    process: "hizmetler.html"
+    about: routes.about,
+    web: routes.web,
+    software: routes.software,
+    network: routes.network,
+    system: routes.system,
+    consulting: routes.solutions,
+    process: routes.services
   };
   contentRoot.querySelectorAll(".faq-item[data-category]").forEach((item) => {
     const destination = faqDestinations[item.dataset.category];
-    const link = item.querySelector('.faq-answer a[href="hizmetler.html"]');
+    const link = item.querySelector(`.faq-answer a[href="${routes.services}"]`);
     if (link && destination) link.href = destination;
   });
 
@@ -1026,7 +778,7 @@ function enhanceServiceShowcaseLinks(root) {
 
     const icon = document.createElement("img");
     icon.className = "service-detail-link-icon";
-    icon.src = "assets/icons/chevron-right.svg";
+    icon.src = "/assets/icons/chevron-right.svg";
     icon.alt = "";
     icon.setAttribute("aria-hidden", "true");
     link.append(icon);
@@ -1088,7 +840,7 @@ function applyBrandAssets(root) {
     if (mark.querySelector(".hero-brand-symbol")) return;
     const image = document.createElement("img");
     image.className = "hero-brand-symbol";
-    image.src = "assets/brand/nodvira-icon.png";
+    image.src = "/assets/brand/nodvira-logo.svg?v=20260826-static1";
     image.alt = "";
     image.setAttribute("aria-hidden", "true");
     mark.replaceChildren(image);
@@ -1129,7 +881,7 @@ function initCustomSelect(root) {
     const listboxId = `${select.id || "custom-select"}-listbox-${selectIndex}`;
     const customSelect = document.createElement("div");
     customSelect.className = "custom-select";
-    customSelect.innerHTML = `<button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="${listboxId}"><span class="custom-select-value"></span><img src="assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button><div class="custom-select-panel" id="${listboxId}" role="listbox" tabindex="-1"></div>`;
+    customSelect.innerHTML = `<button class="custom-select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="${listboxId}"><span class="custom-select-value"></span><img src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button><div class="custom-select-panel" id="${listboxId}" role="listbox" tabindex="-1"></div>`;
     select.insertAdjacentElement("afterend", customSelect);
 
     const trigger = customSelect.querySelector(".custom-select-trigger");
@@ -1206,14 +958,18 @@ function initCustomSelect(root) {
 
 function ensureTechnicalHeroVisual(root) {
   const activeUrl = history.state?.href ? new URL(history.state.href, window.location.href) : renderedUrl;
-  const fileName = activeUrl.pathname.split("/").pop() || "index.html";
+  const fileName = pageKeyFromUrl(activeUrl) || "index.html";
   const visuals = {
-    "web-tasarim.html": { variant: "web", label: "Uyarlanabilir Arayüz Mimarisi", code: "WEB / 01", scene: `<div class="web-desktop-frame"><div class="web-frame-bar"><i></i><i></i><i></i><span></span></div><div class="web-frame-body"><div class="web-frame-nav"><i></i><i></i><i></i><i></i></div><div class="web-frame-canvas"><span class="web-ui-kicker"></span><span class="web-ui-title"></span><span class="web-ui-copy"></span><div class="web-ui-cards"><i></i><i></i><i></i></div><span class="web-ui-rule"></span></div></div></div><div class="web-mobile-frame"><span class="web-mobile-speaker"></span><div class="web-mobile-content"><i></i><b></b><span></span><span></span><span></span></div><span class="web-mobile-home"></span></div><span class="web-connection"><i></i></span><span class="web-size-mark web-size-desktop"></span><span class="web-size-mark web-size-mobile"></span>` },
+    "web-tasarim.html": { variant: "web-v2", label: "Responsive Deneyim ve Performans Sistemi", code: "WEB / 01", scene: `<div class="web-v2-browser"><header><i></i><i></i><i></i><span></span></header><div class="web-v2-browser-body"><aside class="web-v2-sidebar"><b></b><span></span><span></span><span></span><span></span></aside><div class="web-v2-canvas"><div class="web-v2-grid-guides">${"<i></i>".repeat(4)}</div><div class="web-v2-copy"><em></em><b></b><span></span><span></span></div><div class="web-v2-cards">${"<article><i></i><b></b><span></span></article>".repeat(3)}</div><footer><i></i><span></span><span></span></footer></div></div></div><div class="web-v2-device"><i></i><div><em></em><b></b><span></span><span></span><span></span></div><footer></footer></div><div class="web-v2-sync-lines"><span></span><span></span><span></span></div><div class="web-v2-breakpoints"><span><em>DESKTOP</em><i></i></span><span><em>TABLET</em><i></i></span><span><em>MOBILE</em><i></i></span></div><div class="web-v2-quality"><span><em>PERF</em><i></i></span><span><em>A11Y</em><i></i></span><span><em>SEO</em><i></i></span></div>` },
     "yazilim-cozumleri.html": { variant: "software-v2", label: "Modüler Uygulama ve Entegrasyon Mimarisi", code: "YAZILIM / 02", scene: `<div class="software-v2-sources"><article><i></i><b></b><span></span></article><article><i></i><b></b><span></span></article><article><i></i><b></b><span></span></article></div><div class="software-v2-connectors">${"<span></span>".repeat(6)}</div><div class="software-v2-core"><div class="software-v2-corebar"><i></i><i></i><i></i><span></span></div><div class="software-v2-modules">${"<article><i></i><b></b><span></span></article>".repeat(4)}</div></div><div class="software-v2-integrations"><article><i></i><b></b></article><article><i></i><b></b></article><article><i></i><b></b></article></div><div class="software-v2-release">${"<span></span>".repeat(5)}</div><div class="software-v2-state">${"<i></i>".repeat(4)}</div>` },
-    "network.html": { variant: "network-v2", label: "Segmentasyon ve Güvenli Bağlantı Mimarisi", code: "NETWORK / 03", scene: `<div class="network-v2-zones"><span></span><span></span><span></span></div><div class="network-v2-links"><span class="link-a"></span><span class="link-b is-live reverse"><i></i></span><span class="link-c is-live"><i></i></span><span class="link-d"></span><span class="link-e"></span><span class="link-f"></span></div><div class="network-v2-core"><div class="network-v2-ports">${"<i></i>".repeat(6)}</div><b></b><span></span></div><div class="network-v2-node node-a">${"<i></i>".repeat(4)}</div><div class="network-v2-node node-b"><i></i><b></b><span></span></div><div class="network-v2-node node-c"><i></i><i></i><i></i></div><div class="network-v2-node node-d">${"<i></i>".repeat(3)}<span></span></div><div class="network-v2-node node-e"><i></i><b></b></div><div class="network-v2-node node-f"><i></i><b></b><span></span></div>` },
+    "network.html": { variant: "network-v3", label: "Segmentasyon, Erişim ve Ağ Görünürlüğü", code: "NETWORK / 03", scene: `<div class="network-v3-zones"><article class="zone-lan"><em>LAN</em><div>${"<i></i>".repeat(4)}</div></article><article class="zone-wlan"><em>WLAN</em><div><i></i><i></i><i></i><b></b></div></article><article class="zone-wan"><em>WAN</em><div><i></i><b></b><span></span></div></article><article class="zone-systems"><em>SİSTEM</em><div>${"<span><i></i><b></b></span>".repeat(3)}</div></article></div><div class="network-v3-paths"><span class="path-lan"></span><span class="path-wlan"></span><span class="path-wan"></span><span class="path-systems"></span></div><div class="network-v3-core"><header><em>CORE</em><span></span></header><div class="network-v3-ports">${"<i></i>".repeat(8)}</div><footer><b></b><span></span><span></span></footer></div><div class="network-v3-policy"><i></i><b></b><span></span></div><div class="network-v3-telemetry">${"<i></i>".repeat(8)}</div><div class="network-v3-controls"><span><i></i><em>SEGMENT</em></span><span><i></i><em>MONITOR</em></span><span><i></i><em>OPTIMIZE</em></span></div>` },
     "sistem-cozumleri.html": { variant: "system-v2", label: "Sanallaştırma, İzleme ve Süreklilik Mimarisi", code: "SİSTEM / 04", scene: `<div class="system-v2-monitor"><div class="system-v2-chart">${"<i></i>".repeat(6)}</div><div class="system-v2-health"><i></i><b></b><span></span></div></div><div class="system-v2-hosts"><article><header><i></i><b></b></header><div>${"<span></span>".repeat(4)}</div><footer><i></i><b></b></footer></article><article><header><i></i><b></b></header><div>${"<span></span>".repeat(4)}</div><footer><i></i><b></b></footer></article></div><div class="system-v2-fabric">${"<span></span>".repeat(4)}</div><div class="system-v2-storage"><i></i><i></i><i></i><b></b></div><div class="system-v2-backup">${"<i></i>".repeat(4)}<span></span></div>` },
     "cozumler.html": { variant: "consult-v2", label: "Mevcut Durumdan Uygulama Yol Haritasına", code: "DANIŞMANLIK / 05", scene: `<div class="consult-v2-evidence"><header><i></i><i></i><i></i><span></span></header><div>${"<i></i>".repeat(6)}</div><footer><span></span><span></span><span></span></footer></div><div class="consult-v2-priority"><span><i></i></span><span><i></i></span><span><i></i></span></div><div class="consult-v2-connectors"><span></span><span></span><span></span></div><div class="consult-v2-matrix">${"<i></i>".repeat(16)}</div><div class="consult-v2-target"><header><i></i><b></b></header><div>${"<span></span>".repeat(4)}</div></div><div class="consult-v2-roadmap">${"<span></span>".repeat(6)}</div>` },
     "hizmetler.html": { variant: "services-v2", label: "Beş Yetkinlik, Tek Teknoloji Ekosistemi", code: "HİZMETLER / 05", scene: `<div class="services-v2-board"><article class="services-v2-domain domain-web"><em>WEB</em><div class="services-v2-web"><header><i></i><i></i><i></i></header><b></b><span></span><footer><i></i><i></i><i></i></footer></div></article><article class="services-v2-domain domain-software"><em>YAZILIM</em><div class="services-v2-software">${"<i></i>".repeat(4)}</div></article><article class="services-v2-domain domain-consult"><em>DANIŞMANLIK</em><div class="services-v2-consult"><i></i><i></i><i></i><span></span><span></span><span></span></div></article><article class="services-v2-domain domain-network"><em>NETWORK</em><div class="services-v2-network"><b></b>${"<i></i>".repeat(4)}<span></span><span></span></div></article><article class="services-v2-domain domain-system"><em>SİSTEM</em><div class="services-v2-system">${"<span><i></i><b></b></span>".repeat(3)}</div></article></div><div class="services-v2-phases"><span><em>CONNECT</em><i></i></span><span><em>BUILD</em><i></i></span><span><em>EVOLVE</em><i></i></span></div>` },
+    "projeler.html": { variant: "references-v4", label: "Projeden Doğrulanmış Sonuca", code: "REFERANSLAR / 06", scene: `<article class="references-v4-brief"><header><i></i><div><b></b><span></span></div></header><em>PROJE GİRDİSİ</em><div class="references-v4-brief-lines">${"<span></span>".repeat(5)}</div><footer><i></i><i></i><i></i></footer></article><div class="references-v4-entry"><span></span></div><ol class="references-v4-route"><li><i>01</i><strong>İhtiyaç</strong><b></b></li><li><i>02</i><strong>Yaklaşım</strong><b></b></li><li><i>03</i><strong>Çözüm</strong><b></b></li><li><i>04</i><strong>Teknik Yaklaşım</strong><b></b></li><li><i>05</i><strong>Uygulama Süreci</strong><b></b></li><li><i>06</i><strong>Sonuç</strong><b></b></li></ol><div class="references-v4-exit"><span></span></div><article class="references-v4-result"><header><em>SONUÇ RAPORU</em><i></i></header><div class="references-v4-result-mark"><i></i><b></b><span></span></div><div class="references-v4-result-lines">${"<span></span>".repeat(3)}</div><div class="references-v4-result-metrics"><i></i><i></i><i></i><i></i></div><footer><span>DOĞRULANMIŞ ÇIKTI</span><b></b></footer></article><div class="references-v4-progress"><span></span></div>` },
+    "hakkimda.html": { variant: "about-v4", label: "Beş Yetkinlikten Tek Teknoloji Vizyonuna", code: "NODVIRA / 05", scene: `<div class="about-v4-system"><div class="about-v4-capabilities"><article><span>01</span><em>WEB</em><i></i></article><article><span>02</span><em>YAZILIM</em><i></i></article><article><span>03</span><em>NETWORK</em><i></i></article><article><span>04</span><em>SİSTEM</em><i></i></article><article><span>05</span><em>DANIŞMANLIK</em><i></i></article></div><div class="about-v4-traces">${"<span></span>".repeat(5)}</div><div class="about-v4-bus"><i></i><b></b></div><div class="about-v4-brand"><div><img src="/assets/brand/nodvira-logo.svg?v=20260826-static1" alt=""></div><span>BAĞLANTILI TEKNOLOJİ VİZYONU</span></div><div class="about-v4-method"><span><i>01</i><em>CONNECT</em><b></b></span><span><i>02</i><em>BUILD</em><b></b></span><span><i>03</i><em>EVOLVE</em><b></b></span></div></div>` },
+    "blog.html": { variant: "blog-v2", label: "", code: "", scene: `<div class="blog-v2-board"><div class="blog-v2-tabs">${"<i></i>".repeat(5)}</div><div class="blog-v2-pages"><article></article><article></article><article class="blog-v2-page"><header><div><i></i><i></i><i></i></div><span></span></header><div class="blog-v2-feature"><i></i><b></b><span></span></div><div class="blog-v2-copy">${"<span></span>".repeat(5)}</div><footer><i></i><i></i><i></i></footer></article></div><aside class="blog-v2-outline">${"<i></i>".repeat(5)}</aside><div class="blog-v2-progress"><span></span></div></div>` },
+    "sss.html": { variant: "faq-v2", label: "", code: "", scene: `<div class="faq-v2-shell"><div class="faq-v2-query"><i></i><span></span><b></b></div><div class="faq-v2-body"><div class="faq-v2-list">${"<article><i></i><div><b></b><span></span></div><em></em></article>".repeat(4)}</div><div class="faq-v2-bridge"><span></span><i></i><b></b></div><article class="faq-v2-answer"><header><i></i><b></b></header><div>${"<span></span>".repeat(5)}</div><footer><i></i><span></span><span></span></footer></article></div></div>` },
   };
   const config = visuals[fileName];
   if (!config) return;
@@ -1237,7 +993,7 @@ function ensureTechnicalHeroVisual(root) {
       <span class="web-node web-node-a"></span><span class="web-node web-node-b"></span><span class="web-node web-node-c"></span>
       ${config.scene}
     </div>
-    <div class="web-visual-index"><span>${config.label}</span><strong>${config.code}</strong></div>`;
+    ${config.label || config.code ? `<div class="web-visual-index"><span>${config.label}</span><strong>${config.code}</strong></div>` : ""}`;
   container.append(copy, visual);
 }
 
