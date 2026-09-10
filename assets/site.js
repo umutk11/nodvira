@@ -11,7 +11,10 @@ const routes = {
   network: "/hizmetlerimiz/network-cozumleri",
   software: "/hizmetlerimiz/yazilim-cozumleri",
   system: "/hizmetlerimiz/sistem-cozumleri",
-  caseStudy: "/referanslarimiz/kurumsal-web-platformu"
+  caseStudy: "/referanslarimiz/kurumsal-web-platformu",
+  privacyNotice: "/kvkk-aydinlatma-metni",
+  privacy: "/gizlilik-politikasi",
+  cookies: "/cerez-politikasi"
 };
 
 const pageKeysByPath = {
@@ -26,7 +29,10 @@ const pageKeysByPath = {
   "/hakkimizda": "hakkimda.html",
   "/blog": "blog.html",
   "/sss": "sss.html",
-  "/iletisim": "iletisim.html"
+  "/iletisim": "iletisim.html",
+  "/kvkk-aydinlatma-metni": "kvkk-aydinlatma-metni.html",
+  "/gizlilik-politikasi": "gizlilik-politikasi.html",
+  "/cerez-politikasi": "cerez-politikasi.html"
 };
 
 const caseStudySlugs = {
@@ -68,24 +74,27 @@ const serviceNavItems = [
   ["danismanlik-proje", "Teknoloji Danışmanlığı", "Analiz, strateji, mimari ve yol haritası", routes.solutions]
 ];
 
+const servicePageKeys = new Set(["services", "web", "network", "software", "system", "solutions"]);
+
 function headerMarkup() {
   const nav = [
     ["home", "Ana Sayfa"], ["services", "Hizmetlerimiz"], ["projects", "Referanslarımız"],
     ["about", "Hakkımızda"], ["blog", "Blog"], ["faq", "SSS"], ["contact", "İletişim"]
   ];
   const desktopLinks = nav.map(([key, label]) => {
-    const active = page === key ? "active" : "";
-    const current = page === key ? 'aria-current="page"' : "";
+    const selected = page === key || (key === "services" && servicePageKeys.has(page));
+    const active = selected ? "active" : "";
+    const current = selected ? 'aria-current="page"' : "";
     if (key !== "services") return `<a data-nav-link data-page-key="${key}" href="${routes[key]}" class="nav-link ${active}" ${current}>${label}</a>`;
     const serviceLinks = serviceNavItems.map(([, title, description, destination], index) => `<a class="mega-service" href="${destination}"><span class="mega-number">0${index + 1}</span><span><strong>${title}</strong><small>${description}</small></span><span class="mega-arrow" aria-hidden="true">↗</span></a>`).join("");
     return `<div class="nav-services"><a data-nav-link data-page-key="services" href="${routes.services}" class="nav-link service-trigger ${active}" ${current} aria-haspopup="true">${label}<img class="nav-chevron" src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></a><div class="mega-menu"><div class="mega-grid"><div><div class="mega-label">HİZMET KATALOĞU</div><div class="mega-services">${serviceLinks}</div></div><aside class="mega-feature"><h3>Teknolojiyi iş hedefleriniz için birlikte kurgulayalım.</h3><p>İhtiyacınızın hangi hizmet alanına girdiğinden emin değilseniz ilk görüşmede kapsamı netleştirebiliriz.</p><a class="btn btn-primary" href="${routes.contact}">İhtiyacınızı Anlatın →</a></aside></div></div></div>`;
   }).join("");
-  const mobileLinks = `<a data-page-key="home" href="${routes.home}" class="${page === "home" ? "active" : ""}">Ana Sayfa</a><div class="mobile-service-group"><div class="mobile-service-row"><a data-page-key="services" href="${routes.services}" class="${page === "services" ? "active" : ""}">Hizmetlerimiz</a><button class="mobile-service-toggle" type="button" aria-label="Hizmet alt menüsünü aç" aria-expanded="false" aria-controls="mobile-services"><img src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button></div><div class="mobile-services" id="mobile-services">${serviceNavItems.map(([, title, , destination]) => `<a href="${destination}">${title}</a>`).join("")}</div></div><a data-page-key="projects" href="${routes.projects}" class="${page === "projects" ? "active" : ""}">Referanslarımız</a><a data-page-key="about" href="${routes.about}" class="${page === "about" ? "active" : ""}">Hakkımızda</a><a data-page-key="blog" href="${routes.blog}" class="${page === "blog" ? "active" : ""}">Blog</a><a data-page-key="faq" href="${routes.faq}" class="${page === "faq" ? "active" : ""}">SSS</a><a data-page-key="contact" href="${routes.contact}" class="${page === "contact" ? "active" : ""}">İletişim</a>`;
+  const mobileLinks = `<a data-page-key="home" href="${routes.home}" class="${page === "home" ? "active" : ""}">Ana Sayfa</a><div class="mobile-service-group"><div class="mobile-service-row"><a data-page-key="services" href="${routes.services}" class="${servicePageKeys.has(page) ? "active" : ""}">Hizmetlerimiz</a><button class="mobile-service-toggle" type="button" aria-label="Hizmet alt menüsünü aç" aria-expanded="false" aria-controls="mobile-services"><img src="/assets/icons/chevron-down.svg" alt="" aria-hidden="true"></button></div><div class="mobile-services" id="mobile-services">${serviceNavItems.map(([, title, , destination]) => `<a href="${destination}">${title}</a>`).join("")}</div></div><a data-page-key="projects" href="${routes.projects}" class="${page === "projects" ? "active" : ""}">Referanslarımız</a><a data-page-key="about" href="${routes.about}" class="${page === "about" ? "active" : ""}">Hakkımızda</a><a data-page-key="blog" href="${routes.blog}" class="${page === "blog" ? "active" : ""}">Blog</a><a data-page-key="faq" href="${routes.faq}" class="${page === "faq" ? "active" : ""}">SSS</a><a data-page-key="contact" href="${routes.contact}" class="${page === "contact" ? "active" : ""}">İletişim</a>`;
   return `<header class="site-header"><div class="container header-inner">
     <a class="brand header-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="header-lockup" src="/assets/brand/nodvira-logo.svg?v=20260826-static1" alt=""></a>
     <nav class="desktop-nav" aria-label="Ana navigasyon">${desktopLinks}<span class="nav-active-line" aria-hidden="true"></span></nav>
     <div class="header-actions"><a class="btn btn-primary header-cta" href="${routes.contact}"><span>Projenizi Konuşalım</span><span class="cta-arrow" aria-hidden="true">→</span></a><button class="menu-toggle" type="button" aria-label="Menüyü aç" aria-expanded="false" aria-controls="mobile-menu"><span></span></button></div>
-  </div></header><div class="mobile-panel" id="mobile-menu" aria-hidden="true"><div class="mobile-menu-inner"><nav class="mobile-nav" aria-label="Mobil navigasyon">${mobileLinks}</nav><div class="mobile-contact"><span>PROJENİZİ BİRLİKTE DEĞERLENDİRELİM</span><a class="btn btn-primary" href="${routes.contact}">Projenizi Konuşalım →</a><a class="mobile-mail" href="mailto:info@nodvira.com">info@nodvira.com</a></div></div></div>`;
+  </div></header><div class="mobile-panel" id="mobile-menu" aria-hidden="true"><div class="mobile-menu-inner"><nav class="mobile-nav" aria-label="Mobil navigasyon">${mobileLinks}</nav><div class="mobile-contact"><span>PROJENİZİ BİRLİKTE DEĞERLENDİRELİM</span><a class="btn btn-primary" href="${routes.contact}">Projenizi Konuşalım →</a><a class="mobile-mail" href="${routes.contact}">İletişim Formu</a></div></div></div>`;
 }
 
 function footerMarkup() {
@@ -93,9 +102,9 @@ function footerMarkup() {
     <div class="footer-grid">
       <div><a class="brand footer-brand" href="${routes.home}" aria-label="NODVIRA ana sayfa"><img class="brand-lockup" src="/assets/brand/nodvira-logo.svg?v=20260826-static1" alt=""></a><p class="muted" style="margin-top:18px;max-width:300px">Web, yazılım, network, sistem ve teknoloji danışmanlığını bütüncül çözümlerde bir araya getiren teknoloji çözüm ortağı.</p></div>
       <div><div class="footer-title">HİZMETLER</div><div class="footer-links"><a href="${routes.web}">Web Çözümleri</a><a href="${routes.software}">Yazılım Çözümleri</a><a href="${routes.network}">Network Çözümleri</a><a href="${routes.system}">Sistem Çözümleri</a><a href="${routes.solutions}">Teknoloji Danışmanlığı</a></div></div>
-      <div><div class="footer-title">İLETİŞİM</div><div class="footer-links"><a href="mailto:info@nodvira.com">info@nodvira.com</a><a href="https://nodvira.com">nodvira.com</a></div></div>
+      <div><div class="footer-title">İLETİŞİM</div><div class="footer-links"><a href="${routes.contact}">İletişim Formu</a><a href="https://nodvira.com">nodvira.com</a></div></div>
       <div><div class="footer-title">KEŞFEDİN</div><div class="footer-links"><a href="${routes.about}">Hakkımızda</a><a href="${routes.projects}">Referanslarımız</a><a href="${routes.blog}">Blog</a><a href="${routes.faq}">Sıkça Sorulan Sorular</a><a href="${routes.contact}">İletişim</a></div></div>
-    </div><div class="footer-bottom"><span>© 2026 NODVIRA. Tüm hakları saklıdır. · CONNECT • BUILD • EVOLVE</span></div>
+    </div><div class="footer-bottom"><span>© 2026 NODVIRA. Tüm hakları saklıdır. · CONNECT • BUILD • EVOLVE</span><nav class="footer-legal-links" aria-label="Yasal bağlantılar"><a href="${routes.privacyNotice}">KVKK Aydınlatma Metni</a><a href="${routes.privacy}">Gizlilik Politikası</a><a href="${routes.cookies}">Çerez Politikası</a></nav></div>
   </div></footer>`;
 }
 
@@ -200,7 +209,7 @@ function positionActiveLine(target, animate = true) {
 
 function updateNavState(nextPage, animateLine = true) {
   page = nextPage;
-  const servicePage = ["services", "web", "network", "software", "system"].includes(page);
+  const servicePage = servicePageKeys.has(page);
   document.querySelectorAll("[data-page-key]").forEach((link) => {
     const selected = link.dataset.pageKey === page || (link.dataset.pageKey === "services" && servicePage);
     link.classList.toggle("active", selected);
@@ -426,6 +435,7 @@ const caseStudyOrder = ["web", "software", "network", "system", "consulting"];
 const caseStudyData = {
   web: {
     title: "12 Hizmet Hattı İçin Kurumsal Web Platformu",
+    imagePath: "/assets/images/projects/web-platform-cover-v2.webp",
     client: "Anonim B2B danışmanlık grubu",
     industry: "Mühendislik ve Profesyonel Hizmetler",
     services: "Bilgi Mimarisi · UX · Front-end · Teknik SEO",
@@ -461,6 +471,7 @@ const caseStudyData = {
   },
   software: {
     title: "Soğuk Zincir Teslimatlarında İstisna Yönetimi",
+    imagePath: "/assets/images/projects/software-cold-chain-cover-v2.webp",
     client: "Anonim bölgesel dağıtım şirketi",
     industry: "Soğuk Zincir Lojistiği",
     services: "İş Analizi · Web Uygulaması · ERP Entegrasyonu",
@@ -491,6 +502,7 @@ const caseStudyData = {
   },
   network: {
     title: "27 Mağaza ve 2 Depo İçin Ağ Standardizasyonu",
+    imagePath: "/assets/images/projects/network-standardization-cover-v2.webp",
     client: "Anonim ulusal perakende zinciri",
     industry: "Perakende ve Depo Operasyonları",
     services: "LAN/WAN · Wi-Fi · Segmentasyon · Merkezi İzleme",
@@ -512,6 +524,7 @@ const caseStudyData = {
   },
   system: {
     title: "ERP ve Mühendislik İş Yüklerinin Modernizasyonu",
+    imagePath: "/assets/images/projects/system-modernization-cover-v2.webp",
     client: "Anonim endüstriyel üretici",
     industry: "Endüstriyel Üretim",
     services: "Sanallaştırma · Yedekleme · İzleme · İş Sürekliliği",
@@ -533,6 +546,7 @@ const caseStudyData = {
   },
   consulting: {
     title: "Üç Şirketli Grup İçin 24 Aylık Teknoloji Yol Haritası",
+    imagePath: "/assets/images/projects/consulting-roadmap-cover-v2.webp",
     client: "Anonim şirketler grubu",
     industry: "Dağıtım, Servis ve Üretim",
     services: "Mevcut Durum · Mimari Karar · Portföy Önceliği",
@@ -559,8 +573,17 @@ function applyCaseStudyData(root) {
   if (!title) return;
 
   const caseSlug = normalizeRoutePath(renderedUrl.pathname).split("/").pop();
-  const requestedKey = caseStudyKeysBySlug[caseSlug] || renderedUrl.searchParams.get("project") || "web";
-  const key = caseStudyData[requestedKey] ? requestedKey : "web";
+  const requestedProject = renderedUrl.searchParams.get("project");
+  const requestedKey = caseStudyKeysBySlug[caseSlug] || requestedProject;
+  if (!requestedKey || !caseStudyData[requestedKey]) {
+    const pageRoot = root.matches?.("main.site-main") ? root : root.querySelector?.("main.site-main");
+    if (pageRoot) {
+      pageRoot.innerHTML = '<section class="section"><div class="container"><div class="cta-panel not-found-panel"><span class="article-meta">404</span><h1>Referans bulunamadı.</h1><p>Aradığınız referans kaldırılmış veya adresi yanlış yazılmış olabilir.</p><div class="button-row"><a class="btn" href="/referanslarimiz">Tüm Referanslara Dön →</a></div></div></div></section>';
+    }
+    document.title = "Referans Bulunamadı | NODVIRA";
+    return;
+  }
+  const key = requestedKey;
   const data = caseStudyData[key];
   const index = caseStudyOrder.indexOf(key);
   const previousKey = caseStudyOrder[(index - 1 + caseStudyOrder.length) % caseStudyOrder.length];
@@ -574,7 +597,6 @@ function applyCaseStudyData(root) {
     "[data-case-industry]": data.industry,
     "[data-case-services]": data.services,
     "[data-case-status]": data.status,
-    "[data-case-code]": data.code,
     "[data-case-visual-label]": data.visualLabel,
     "[data-case-visual-caption]": data.visualCaption,
     "[data-case-technical-intro]": data.technicalIntro,
@@ -585,6 +607,13 @@ function applyCaseStudyData(root) {
     const element = root.querySelector(selector);
     if (element) element.textContent = value;
   });
+
+  const detailVisual = root.querySelector(".case-detail-visual");
+  if (detailVisual && data.imagePath) {
+    detailVisual.classList.add("has-uploaded-image");
+    detailVisual.setAttribute("aria-label", `${data.title} proje kapak görseli`);
+    detailVisual.style.backgroundImage = `linear-gradient(rgba(7,18,34,.2), rgba(7,18,34,.46)), url("${data.imagePath}")`;
+  }
 
   const renderParagraphs = (selector, paragraphs) => {
     const container = root.querySelector(selector);
@@ -761,9 +790,13 @@ function applyContactSelection(root) {
     software: "Yazılım Çözümleri",
     network: "Network Çözümleri",
     system: "Sistem Çözümleri",
-    consulting: "Teknoloji Danışmanlığı"
+    consulting: "Teknoloji Danışmanlığı",
+    privacy: "KVKK Başvurusu"
   };
-  const requestedService = serviceNames[renderedUrl.searchParams.get("hizmet")];
+  const requestedKey = renderedUrl.searchParams.get("konu") === "kvkk"
+    ? "privacy"
+    : renderedUrl.searchParams.get("hizmet");
+  const requestedService = serviceNames[requestedKey];
   if (requestedService && [...select.options].some((option) => option.value === requestedService)) {
     select.value = requestedService;
   }
@@ -839,8 +872,8 @@ function applyBrandAssets(root) {
   root.querySelectorAll(".hero-stat strong").forEach((mark) => {
     if (mark.querySelector(".hero-brand-symbol")) return;
     const image = document.createElement("img");
-    image.className = "hero-brand-symbol";
-    image.src = "/assets/brand/nodvira-logo.svg?v=20260826-static1";
+    image.className = "hero-brand-symbol hero-brand-icon";
+    image.src = "/assets/favicon.svg?v=20260901";
     image.alt = "";
     image.setAttribute("aria-hidden", "true");
     mark.replaceChildren(image);
@@ -1010,6 +1043,7 @@ function initPageInteractions(root) {
   initCustomSelect(root);
   initCaseSectionNavigation(root);
   if (window.PublicBlog) window.PublicBlog.init(root);
+  if (window.PublicProjects) window.PublicProjects.init(root);
   initScrollMotion(root);
   root.querySelectorAll(".faq-question").forEach((button) => {
     button.addEventListener("click", () => {
@@ -1020,18 +1054,46 @@ function initPageInteractions(root) {
 
   const faqList = root.querySelector(".faq-list");
   const resetFaqScroll = () => faqList?.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+  const faqSearch = root.querySelector("#faq-search");
+  const faqItems = [...root.querySelectorAll(".faq-item[data-category]")];
+  const faqCategoryButtons = [...root.querySelectorAll(".faq-category")];
+  const faqEmptyState = root.querySelector("[data-faq-empty]");
+  const faqStatus = root.querySelector("[data-faq-status]");
+  let activeFaqCategory = faqCategoryButtons.find((button) => button.classList.contains("active"))?.dataset.category || "all";
 
-  root.querySelectorAll(".faq-category").forEach((button) => {
+  const applyFaqFilters = () => {
+    const query = faqSearch?.value.trim().toLocaleLowerCase("tr") || "";
+    let visibleCount = 0;
+
+    faqCategoryButtons.forEach((button) => {
+      const active = button.dataset.category === activeFaqCategory;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", String(active));
+    });
+
+    faqItems.forEach((item) => {
+      const categoryMatches = activeFaqCategory === "all" || item.dataset.category === activeFaqCategory;
+      const queryMatches = !query || item.textContent.toLocaleLowerCase("tr").includes(query);
+      const visible = categoryMatches && queryMatches;
+      item.hidden = !visible;
+      if (visible) visibleCount += 1;
+    });
+
+    if (faqEmptyState) faqEmptyState.hidden = visibleCount > 0;
+    if (faqStatus) faqStatus.textContent = visibleCount
+      ? `${visibleCount} soru gösteriliyor.`
+      : "Aramanızla eşleşen soru bulunamadı.";
+    resetFaqScroll();
+  };
+
+  faqCategoryButtons.forEach((button) => {
     button.addEventListener("click", () => {
-      root.querySelectorAll(".faq-category").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-      const category = button.dataset.category;
-      root.querySelectorAll(".faq-item").forEach((item) => {
-        item.hidden = category !== "all" && item.dataset.category !== category;
-      });
-      resetFaqScroll();
+      activeFaqCategory = button.dataset.category || "all";
+      applyFaqFilters();
     });
   });
+  faqSearch?.addEventListener("input", applyFaqFilters);
+  if (faqItems.length) applyFaqFilters();
 
   const projectFilterButtons = [...root.querySelectorAll(".filter-button")];
   const projectItems = [...root.querySelectorAll("[data-project-category]")];
@@ -1139,24 +1201,6 @@ function initPageInteractions(root) {
     projectPreviousPage?.addEventListener("click", () => changeProjectPage(currentProjectPage - 1));
     projectNextPage?.addEventListener("click", () => changeProjectPage(currentProjectPage + 1));
   }
-
-  const faqSearch = root.querySelector("#faq-search");
-  faqSearch?.addEventListener("input", () => {
-    const query = faqSearch.value.trim().toLocaleLowerCase("tr");
-    root.querySelectorAll(".faq-item").forEach((item) => {
-      item.hidden = Boolean(query) && !item.textContent.toLocaleLowerCase("tr").includes(query);
-    });
-    root.querySelectorAll(".faq-category").forEach((item) => item.classList.toggle("active", item.dataset.category === "all"));
-    resetFaqScroll();
-  });
-
-  const blogSearch = root.querySelector("#blog-search");
-  blogSearch?.addEventListener("input", () => {
-    const query = blogSearch.value.trim().toLocaleLowerCase("tr");
-    root.querySelectorAll("[data-blog-list] .article-card").forEach((item) => {
-      item.hidden = Boolean(query) && !item.textContent.toLocaleLowerCase("tr").includes(query);
-    });
-  });
 
   root.querySelectorAll(".capability-accordion").forEach((accordion) => {
     const items = [...accordion.querySelectorAll(".capability-accordion-item")];

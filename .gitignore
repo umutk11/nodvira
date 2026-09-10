@@ -1,12 +1,8 @@
-# Bu repo yalnızca frontend inceleme kopyasıdır.
-backend/
-admin/
-assets/images/
-assets/uploads/
-.env
-.env.*
-!.env.example
-node_modules/
-.pnpm-store/
+backend/node_modules/
+backend/.env
+backend/uploads/
+backend/logs/
+backend/.local/
+backend/postgresql-*-binaries.zip
 *.log
-.publish-tools/
+.pnpm-store/

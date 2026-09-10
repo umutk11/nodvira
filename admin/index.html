@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Yönetici Girişi | NODVIRA</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg?v=20260901">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/admin.css?v=20260831-project01">
+</head>
+<body class="admin-login-page">
+  <main class="login-layout">
+    <section class="login-intro">
+      <a class="admin-brand" href="/" aria-label="NODVIRA ana sayfa">
+        <img src="../assets/brand/nodvira-logo.svg?v=20260826-static1" alt="">
+      </a>
+      <div class="login-copy">
+        <span class="admin-eyebrow">Güvenli yönetim alanı</span>
+        <h1>Talep akışını tek noktadan yönetin.</h1>
+        <p>İletişim formundan gelen kayıtları inceleyin, durumlarını güncelleyin ve operasyon akışını takip edin.</p>
+      </div>
+      <p class="login-security-note">Oturumlar süre sınırına sahiptir ve yönetim ekranları giriş yapılmadan görüntülenemez.</p>
+    </section>
+
+    <section class="login-card" aria-labelledby="login-title">
+      <div>
+        <span class="admin-eyebrow">Yönetici girişi</span>
+        <h2 id="login-title">Tekrar hoş geldiniz.</h2>
+        <p class="admin-muted">Devam etmek için yönetici hesabınızla giriş yapın.</p>
+      </div>
+      <form id="admin-login-form" novalidate>
+        <label for="admin-username">Kullanıcı adı</label>
+        <input id="admin-username" name="username" type="text" autocomplete="username" minlength="3" maxlength="32" autocapitalize="none" spellcheck="false" required>
+        <label for="admin-password">Şifre</label>
+        <div class="password-field">
+          <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+          <button class="password-toggle" id="password-toggle" type="button" aria-label="Şifreyi göster">Göster</button>
+        </div>
+        <p class="form-message" id="login-message" aria-live="polite"></p>
+        <button class="admin-button admin-button-primary" type="submit">Giriş yap</button>
+      </form>
+    </section>
+  </main>
+  <script src="assets/login.js?v=20260825-auth01"></script>
+</body>
+</html>

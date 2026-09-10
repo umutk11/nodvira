@@ -4,6 +4,109 @@
   const CATEGORY_LABELS = { network: "Network", system: "Sistem", web: "Web Teknolojileri", software: "Yazılım", transformation: "Dijital Dönüşüm", consulting: "Teknoloji Danışmanlığı", management: "Teknoloji Danışmanlığı" };
   const SERVICE_LINKS = { network: "/hizmetlerimiz/network-cozumleri", system: "/hizmetlerimiz/sistem-cozumleri", web: "/hizmetlerimiz/web-cozumleri", software: "/hizmetlerimiz/yazilim-cozumleri", transformation: "/hizmetlerimiz/teknoloji-danismanligi", consulting: "/hizmetlerimiz/teknoloji-danismanligi", management: "/hizmetlerimiz/teknoloji-danismanligi" };
   const initializedRoots = new WeakSet();
+  let apiUnavailable = false;
+
+  function apiEndpoint(path = "") {
+    if (global.NODVIRA_API_BASE) {
+      return `${String(global.NODVIRA_API_BASE).replace(/\/$/, "")}/api/blog-posts${path}`;
+    }
+    const localHost = ["127.0.0.1", "localhost"].includes(global.location.hostname);
+    if (global.location.protocol === "file:" || (localHost && global.location.port !== "3000")) {
+      return `http://127.0.0.1:3000/api/blog-posts${path}`;
+    }
+    return `/api/blog-posts${path}`;
+  }
+
+  function mediaUrl(path) {
+    if (!String(path || "").startsWith("/uploads/")) return path || "";
+    return new URL(path, new URL(apiEndpoint(), global.location.href).origin).href;
+  }
+
+  function setMeta(selector, attribute, value) {
+    let tag = document.head.querySelector(selector);
+    if (!tag) {
+      tag = document.createElement("meta");
+      const match = selector.match(/meta\[(name|property)="([^"]+)"\]/);
+      if (match) tag.setAttribute(match[1], match[2]);
+      document.head.append(tag);
+    }
+    tag.setAttribute(attribute, value);
+  }
+
+  function applyBlogSeo(post, activeUrl) {
+    const canonicalUrl = `${activeUrl.origin}/blog/${encodeURIComponent(post.slug)}`;
+    const seoTitle = post.seoTitle || `${post.title} | NODVIRA`;
+    const description = post.metaDescription || post.excerpt;
+    const image = post.image ? mediaUrl(post.image) : "";
+    document.title = seoTitle;
+    setMeta('meta[name="description"]', "content", description);
+    setMeta('meta[property="og:title"]', "content", seoTitle);
+    setMeta('meta[property="og:description"]', "content", description);
+    setMeta('meta[property="og:type"]', "content", "article");
+    setMeta('meta[property="og:url"]', "content", canonicalUrl);
+    setMeta('meta[name="twitter:card"]', "content", image ? "summary_large_image" : "summary");
+    setMeta('meta[name="twitter:title"]', "content", seoTitle);
+    setMeta('meta[name="twitter:description"]', "content", description);
+    if (image) {
+      setMeta('meta[property="og:image"]', "content", image);
+      setMeta('meta[property="og:image:alt"]', "content", post.imageAlt || post.title);
+      setMeta('meta[name="twitter:image"]', "content", image);
+    }
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) { canonical = document.createElement("link"); canonical.rel = "canonical"; document.head.append(canonical); }
+    canonical.href = canonicalUrl;
+    document.querySelector("#dynamic-content-jsonld")?.remove();
+    const jsonLd = document.createElement("script");
+    jsonLd.id = "dynamic-content-jsonld";
+    jsonLd.type = "application/ld+json";
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        { "@type": "BlogPosting", headline: post.title, description, image: image || undefined,
+          datePublished: post.publishedAt, dateModified: post.updatedAt || post.publishedAt,
+          author: { "@type": "Organization", name: post.authorName || "NODVIRA" },
+          publisher: { "@type": "Organization", name: "NODVIRA" }, mainEntityOfPage: canonicalUrl },
+        { "@type": "BreadcrumbList", itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Ana Sayfa", item: `${activeUrl.origin}/` },
+          { "@type": "ListItem", position: 2, name: "Blog", item: `${activeUrl.origin}/blog` },
+          { "@type": "ListItem", position: 3, name: post.title, item: canonicalUrl },
+        ] },
+      ],
+    });
+    document.head.append(jsonLd);
+  }
+
+  async function requestApi(path = "", parameters = null) {
+    if (apiUnavailable) throw new Error("Blog API kullanılamıyor.");
+    const url = new URL(apiEndpoint(path), global.location.href);
+    if (parameters) {
+      Object.entries(parameters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== "") url.searchParams.set(key, value);
+      });
+    }
+    const controller = new AbortController();
+    const timeout = global.setTimeout(() => controller.abort(), 4_000);
+    try {
+      const response = await fetch(url, { headers: { Accept: "application/json" }, signal: controller.signal });
+      const contentType = response.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        apiUnavailable = true;
+        throw new Error("Blog API JSON yanıtı vermedi.");
+      }
+      const result = await response.json();
+      if (!response.ok) {
+        const error = new Error(result.message || "Blog API isteği başarısız oldu.");
+        error.status = response.status;
+        throw error;
+      }
+      return result;
+    } catch (error) {
+      if (!error.status) apiUnavailable = true;
+      throw error;
+    } finally {
+      global.clearTimeout(timeout);
+    }
+  }
 
   function createElement(tag, className, text) {
     const element = document.createElement(tag);
@@ -150,15 +253,15 @@
     if (post.image) {
       const image = document.createElement("img");
       image.className = "article-image";
-      image.src = post.image;
-      image.alt = "";
+      image.src = mediaUrl(post.image);
+      image.alt = post.imageAlt || `${post.title} kapak görseli`;
       image.loading = "lazy";
       card.append(image);
     } else {
       card.append(createElement("div", "visual-placeholder", `${CATEGORY_LABELS[post.category] || "Blog"} görseli`));
     }
     const metaRow = createElement("div", "article-card-meta");
-    const category = createElement("span", "article-meta", `${CATEGORY_LABELS[post.category] || post.category} · ${readingTime(post.content)} DK.`);
+    const category = createElement("span", "article-meta", `${CATEGORY_LABELS[post.category] || post.category} · ${post.readingTimeMinutes || readingTime(post.content)} DK.`);
     const date = createElement("time", "article-date", publicationDate(post.publishedAt || post.createdAt));
     if (post.publishedAt || post.createdAt) date.dateTime = post.publishedAt || post.createdAt;
     metaRow.append(category, date);
@@ -169,6 +272,83 @@
     return card;
   }
 
+  function staticBlogList({ category, search, page, limit }) {
+    const query = String(search || "").toLocaleLowerCase("tr");
+    const posts = [...(global.StaticBlogPosts || [])]
+      .filter((post) => post.status === "published")
+      .filter((post) => category === "all" || post.category === category)
+      .filter((post) => !query || `${post.title} ${post.excerpt} ${post.content}`.toLocaleLowerCase("tr").includes(query))
+      .sort((left, right) => String(right.publishedAt).localeCompare(String(left.publishedAt)));
+    const totalPages = Math.max(1, Math.ceil(posts.length / limit));
+    const safePage = Math.min(page, totalPages);
+    return {
+      items: posts.slice((safePage - 1) * limit, safePage * limit),
+      pagination: {
+        page: safePage,
+        limit,
+        total: posts.length,
+        totalPages,
+        hasPrevious: safePage > 1,
+        hasNext: safePage < totalPages,
+      },
+    };
+  }
+
+  async function loadBlogList(parameters) {
+    try {
+      return await requestApi("", parameters);
+    } catch (error) {
+      if (error.status === 422) throw error;
+      return staticBlogList(parameters);
+    }
+  }
+
+  async function renderFeatured(root) {
+    const featured = root.querySelector("[data-featured-blog]");
+    const image = featured?.querySelector("[data-featured-blog-image]");
+    const slug = featured?.dataset.featuredBlog;
+    if (!featured || !image || !slug) return;
+
+    let post = null;
+    try {
+      post = (await requestApi(`/${encodeURIComponent(slug)}`)).item;
+    } catch (_) {
+      post = [...(global.StaticBlogPosts || [])]
+        .find((candidate) => candidate.status === "published" && candidate.slug === slug) || null;
+    }
+
+    if (!post?.image) return;
+    image.src = mediaUrl(post.image);
+    image.alt = post.imageAlt || `${post.title} kapak görseli`;
+  }
+
+  function renderPagination(navigation, pagination, onPageChange) {
+    if (!navigation) return;
+    navigation.replaceChildren();
+    navigation.hidden = pagination.totalPages <= 1;
+    if (navigation.hidden) return;
+
+    const previous = createElement("button", "btn btn-secondary", "← Önceki");
+    previous.type = "button";
+    previous.disabled = !pagination.hasPrevious;
+    previous.addEventListener("click", () => onPageChange(pagination.page - 1));
+    navigation.append(previous);
+
+    for (let page = 1; page <= pagination.totalPages; page += 1) {
+      const button = createElement("button", "btn btn-secondary", String(page));
+      button.type = "button";
+      if (page === pagination.page) button.setAttribute("aria-current", "page");
+      button.addEventListener("click", () => onPageChange(page));
+      navigation.append(button);
+    }
+
+    const next = createElement("button", "btn btn-secondary", "Sonraki →");
+    next.type = "button";
+    next.disabled = !pagination.hasNext;
+    next.addEventListener("click", () => onPageChange(pagination.page + 1));
+    navigation.append(next);
+  }
+
   async function renderList(root) {
     const filterRow = root.querySelector(".filter-row");
     if (!filterRow) return;
@@ -176,25 +356,67 @@
     if (!grid) return;
     grid.dataset.blogList = "";
     grid.className = "grid-3 public-blog-grid";
-    grid.setAttribute("aria-busy", "true");
-    try {
-      const posts = [...(global.StaticBlogPosts || [])]
-        .filter((post) => post.status === "published")
-        .sort((left, right) => String(right.publishedAt).localeCompare(String(left.publishedAt)));
-      grid.replaceChildren(...posts.map(createPostCard));
-      if (!posts.length) {
+    const navigation = root.querySelector(".pagination");
+    const searchInput = root.querySelector("#blog-search");
+    const categoryButtons = [...filterRow.querySelectorAll("[data-filter]")];
+    const state = { category: "all", search: "", page: 1, limit: 6 };
+    let requestSequence = 0;
+    let searchTimer;
+
+    const update = async () => {
+      const sequence = ++requestSequence;
+      grid.setAttribute("aria-busy", "true");
+      try {
+        const result = await loadBlogList(state);
+        if (sequence !== requestSequence) return;
+        state.page = result.pagination.page;
+        grid.replaceChildren(...result.items.map(createPostCard));
+        if (!result.items.length) {
+          const empty = createElement("div", "public-blog-empty");
+          empty.append(createElement("h2", "", "Yazı bulunamadı."), createElement("p", "muted", "Arama ifadenizi veya kategori seçiminizi değiştirebilirsiniz."));
+          grid.replaceChildren(empty);
+        }
+        renderPagination(navigation, result.pagination, (page) => {
+          state.page = page;
+          update();
+          grid.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      } catch (error) {
+        if (sequence !== requestSequence) return;
         const empty = createElement("div", "public-blog-empty");
-        empty.append(createElement("h2", "", "Henüz yayınlanmış yazı yok."), createElement("p", "muted", "Yeni içerikler hazırlandığında burada görünecek."));
+        empty.append(createElement("h2", "", "Yazılar yüklenemedi."), createElement("p", "muted", "Lütfen filtreleri kontrol ederek tekrar deneyin."));
         grid.replaceChildren(empty);
+        if (navigation) navigation.hidden = true;
+        console.error("Blog listesi yüklenemedi.", error);
+      } finally {
+        if (sequence === requestSequence) grid.removeAttribute("aria-busy");
       }
-    } catch (error) {
-      const empty = createElement("div", "public-blog-empty");
-      empty.append(createElement("h2", "", "Yazılar yüklenemedi."), createElement("p", "muted", "Lütfen sayfayı yenileyerek tekrar deneyin."));
-      grid.replaceChildren(empty);
-      console.error("Blog listesi yüklenemedi.", error);
-    } finally {
-      grid.removeAttribute("aria-busy");
-    }
+    };
+
+    categoryButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.filter === state.category));
+      button.addEventListener("click", () => {
+        state.category = button.dataset.filter || "all";
+        state.page = 1;
+        categoryButtons.forEach((candidate) => {
+          const active = candidate === button;
+          candidate.classList.toggle("active", active);
+          candidate.setAttribute("aria-pressed", String(active));
+        });
+        update();
+      });
+    });
+
+    searchInput?.addEventListener("input", () => {
+      global.clearTimeout(searchTimer);
+      searchTimer = global.setTimeout(() => {
+        state.search = searchInput.value.trim();
+        state.page = 1;
+        update();
+      }, 240);
+    });
+
+    await update();
   }
 
   async function renderDetail(root) {
@@ -205,28 +427,36 @@
     const slug = cleanSlug || activeUrl.searchParams.get("slug");
     try {
       const publishedPosts = [...(global.StaticBlogPosts || [])].filter((candidate) => candidate.status === "published");
-      const post = slug ? publishedPosts.find((candidate) => candidate.slug === slug) : null;
+      let post = null;
+      if (slug) {
+        try {
+          post = (await requestApi(`/${encodeURIComponent(slug)}`)).item;
+        } catch (error) {
+          if (error.status !== 404) post = publishedPosts.find((candidate) => candidate.slug === slug) || null;
+        }
+      }
       if (!post || post.status !== "published") {
         article.replaceChildren(createElement("h1", "", "Yazı bulunamadı."), createElement("p", "lead", "Bu içerik kaldırılmış, taslağa alınmış veya adresi değişmiş olabilir."));
         document.title = "Yazı Bulunamadı | NODVIRA";
         return;
       }
-      document.title = `${post.title} | NODVIRA`;
-      const description = document.querySelector('meta[name="description"]');
-      if (description) description.content = post.excerpt;
+      applyBlogSeo(post, activeUrl);
       const header = createElement("header", "blog-detail-header");
       const published = publicationDate(post.publishedAt || post.createdAt);
-      header.append(createElement("span", "article-meta", `${CATEGORY_LABELS[post.category] || post.category} · ${published} · ${readingTime(post.content)} DK. · NODVIRA`), createElement("h1", "", post.title), createElement("p", "lead", post.excerpt));
+      header.append(createElement("span", "article-meta", `${CATEGORY_LABELS[post.category] || post.category} · ${published} · ${post.readingTimeMinutes || readingTime(post.content)} DK. · NODVIRA`), createElement("h1", "", post.title), createElement("p", "lead", post.excerpt));
       article.replaceChildren(header);
       if (post.image) {
+        const media = document.createElement("figure");
+        media.className = "blog-detail-media";
         const image = document.createElement("img");
         image.className = "blog-detail-image";
-        image.src = post.image;
-        image.alt = "";
-        article.append(image);
+        image.src = mediaUrl(post.image);
+        image.alt = post.imageAlt || `${post.title} kapak görseli`;
+        media.append(image);
+        article.append(media);
       } else {
         const visual = createElement("div", "blog-detail-visual");
-        visual.append(createElement("span", "", CATEGORY_LABELS[post.category] || "NODVIRA BLOG"), createElement("strong", "", "TEKNİK REHBER"), createElement("small", "", `${readingTime(post.content)} dakikalık okuma`));
+        visual.append(createElement("span", "", CATEGORY_LABELS[post.category] || "NODVIRA BLOG"), createElement("strong", "", "TEKNİK REHBER"), createElement("small", "", `${post.readingTimeMinutes || readingTime(post.content)} dakikalık okuma`));
         article.append(visual);
       }
       const renderedContent = renderArticleContent(post.content);
@@ -268,6 +498,7 @@
   function init(root) {
     if (!root || initializedRoots.has(root)) return;
     initializedRoots.add(root);
+    renderFeatured(root);
     renderList(root);
     renderDetail(root);
   }

@@ -7,12 +7,12 @@
 <title>Sıkça Sorulan Sorular | NODVIRA</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg?v=20260901">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png">
 <meta name="theme-color" content="#08111f">
-<link rel="stylesheet" href="/assets/styles.css?v=20260826-hero20">
+<link rel="stylesheet" href="/assets/styles.css?v=20260902-mediahover01">
 </head>
 <body data-page="faq">
 <div id="site-header">
@@ -29,20 +29,21 @@
 <div class="container">
 <div class="field">
 <label for="faq-search">Sorularda ara</label>
-<input id="faq-search" type="search" placeholder="Bir konu veya soru yazın">
+<input id="faq-search" type="search" placeholder="Bir konu veya soru yazın" aria-controls="faq-list" aria-describedby="faq-filter-status">
+<span class="visually-hidden" id="faq-filter-status" data-faq-status aria-live="polite"></span>
 </div>
 <div class="faq-layout">
 <aside class="faq-categories" aria-label="SSS kategorileri">
-<button class="faq-category active" data-category="all">Tüm Sorular</button>
-<button class="faq-category" data-category="about">NODVIRA Hakkında</button>
-<button class="faq-category" data-category="web">Web Çözümleri</button>
-<button class="faq-category" data-category="software">Yazılım Çözümleri</button>
-<button class="faq-category" data-category="network">Network Çözümleri</button>
-<button class="faq-category" data-category="system">Sistem Çözümleri</button>
-<button class="faq-category" data-category="consulting">Teknoloji Danışmanlığı</button>
-<button class="faq-category" data-category="process">Proje Süreci</button>
+<button class="faq-category active" data-category="all" aria-controls="faq-list" aria-pressed="true">Tüm Sorular</button>
+<button class="faq-category" data-category="about" aria-controls="faq-list" aria-pressed="false">NODVIRA Hakkında</button>
+<button class="faq-category" data-category="web" aria-controls="faq-list" aria-pressed="false">Web Çözümleri</button>
+<button class="faq-category" data-category="software" aria-controls="faq-list" aria-pressed="false">Yazılım Çözümleri</button>
+<button class="faq-category" data-category="network" aria-controls="faq-list" aria-pressed="false">Network Çözümleri</button>
+<button class="faq-category" data-category="system" aria-controls="faq-list" aria-pressed="false">Sistem Çözümleri</button>
+<button class="faq-category" data-category="consulting" aria-controls="faq-list" aria-pressed="false">Teknoloji Danışmanlığı</button>
+<button class="faq-category" data-category="process" aria-controls="faq-list" aria-pressed="false">Proje Süreci</button>
 </aside>
-<div class="faq-list" tabindex="0" aria-label="Sıkça sorulan sorular listesi">
+<div class="faq-list" id="faq-list" tabindex="0" aria-label="Sıkça sorulan sorular listesi">
 <article class="faq-item" data-category="about">
 <button class="faq-question" aria-expanded="false">NODVIRA nasıl bir yaklaşım izler?<span>＋</span>
 </button>
@@ -155,6 +156,7 @@
 <button class="faq-question" aria-expanded="false">Proje sırasında kapsam değişirse ne olur?<span>＋</span></button>
 <div class="faq-answer"><p>Yeni talebin süre, maliyet, mimari ve mevcut teslimlere etkisi değerlendirilir. Onaylanan değişiklikler proje planına kontrollü biçimde eklenir; mevcut kapsamın sessizce genişlemesine izin verilmez.</p></div>
 </article>
+<p class="faq-empty-state" data-faq-empty hidden>Aramanızla eşleşen bir soru bulunamadı. Farklı bir ifade deneyebilir veya bizimle iletişime geçebilirsiniz.</p>
 </div>
 </div>
 </div>
@@ -174,11 +176,13 @@
 </script>
 <script src="/assets/public/request-form.js" defer>
 </script>
-<script src="/assets/public/blog-renderer.js" defer>
+<script src="/assets/public/blog-renderer.js?v=20260902-featured01" defer>
+</script>
+<script src="/assets/public/project-renderer.js?v=20260902-mediahover01" defer>
 </script>
 <script src="/assets/page-data.js" defer>
 </script>
-<script src="/assets/site.js?v=20260826-hero20" defer>
+<script src="/assets/site.js?v=20260902-projectphotos01" defer>
 </script>
 </body>
 </html>

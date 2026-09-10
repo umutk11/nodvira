@@ -1,0 +1,57 @@
+# Bu blok, NODVIRA site kökünü sunan mevcut `server {}` bloğunun içine eklenir.
+index index.html;
+
+location = /index.html { return 301 /; }
+location = /hizmetler.html { return 301 /hizmetlerimiz$is_args$args; }
+location = /web-tasarim.html { return 301 /hizmetlerimiz/web-cozumleri$is_args$args; }
+location = /yazilim-cozumleri.html { return 301 /hizmetlerimiz/yazilim-cozumleri$is_args$args; }
+location = /network.html { return 301 /hizmetlerimiz/network-cozumleri$is_args$args; }
+location = /sistem-cozumleri.html { return 301 /hizmetlerimiz/sistem-cozumleri$is_args$args; }
+location = /cozumler.html { return 301 /hizmetlerimiz/teknoloji-danismanligi$is_args$args; }
+location = /projeler.html { return 301 /referanslarimiz$is_args$args; }
+location = /hakkimda.html { return 301 /hakkimizda$is_args$args; }
+location = /blog.html { return 301 /blog$is_args$args; }
+location = /sss.html { return 301 /sss$is_args$args; }
+location = /iletisim.html { return 301 /iletisim$is_args$args; }
+location = /kvkk-aydinlatma-metni.html { return 301 /kvkk-aydinlatma-metni$is_args$args; }
+location = /gizlilik-politikasi.html { return 301 /gizlilik-politikasi$is_args$args; }
+location = /cerez-politikasi.html { return 301 /cerez-politikasi$is_args$args; }
+
+location = /referans-detay.html {
+  if ($arg_project = web) { return 301 /referanslarimiz/kurumsal-web-platformu; }
+  if ($arg_project = software) { return 301 /referanslarimiz/soguk-zincir-istisna-yonetimi; }
+  if ($arg_project = network) { return 301 /referanslarimiz/ag-standardizasyonu; }
+  if ($arg_project = system) { return 301 /referanslarimiz/sistem-modernizasyonu; }
+  if ($arg_project = consulting) { return 301 /referanslarimiz/teknoloji-yol-haritasi; }
+  return 301 /referanslarimiz;
+}
+
+location = /blog-detay.html {
+  if ($arg_slug != "") { return 301 /blog/$arg_slug; }
+  return 301 /blog;
+}
+
+location = /hizmetlerimiz { try_files /hizmetler.html =404; }
+location = /hizmetlerimiz/web-cozumleri { try_files /web-tasarim.html =404; }
+location = /hizmetlerimiz/yazilim-cozumleri { try_files /yazilim-cozumleri.html =404; }
+location = /hizmetlerimiz/network-cozumleri { try_files /network.html =404; }
+location = /hizmetlerimiz/sistem-cozumleri { try_files /sistem-cozumleri.html =404; }
+location = /hizmetlerimiz/teknoloji-danismanligi { try_files /cozumler.html =404; }
+location = /referanslarimiz { try_files /projeler.html =404; }
+location ~ ^/referanslarimiz/kurumsal-web-platformu/?$ { try_files /referans-detay.html =404; }
+location ~ ^/referanslarimiz/soguk-zincir-istisna-yonetimi/?$ { try_files /referans-detay.html =404; }
+location ~ ^/referanslarimiz/ag-standardizasyonu/?$ { try_files /referans-detay.html =404; }
+location ~ ^/referanslarimiz/sistem-modernizasyonu/?$ { try_files /referans-detay.html =404; }
+location ~ ^/referanslarimiz/teknoloji-yol-haritasi/?$ { try_files /referans-detay.html =404; }
+location = /hakkimizda { try_files /hakkimda.html =404; }
+location = /blog { try_files /blog.html =404; }
+location ~ ^/blog/[^/]+/?$ { try_files /blog-detay.html =404; }
+location = /sss { try_files /sss.html =404; }
+location = /iletisim { try_files /iletisim.html =404; }
+location = /kvkk-aydinlatma-metni { try_files /kvkk-aydinlatma-metni.html =404; }
+location = /gizlilik-politikasi { try_files /gizlilik-politikasi.html =404; }
+location = /cerez-politikasi { try_files /cerez-politikasi.html =404; }
+
+location / {
+  try_files $uri $uri/ =404;
+}

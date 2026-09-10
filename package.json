@@ -1,0 +1,9 @@
+{
+  "name": "nodvira-frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "preview": "node scripts/preview-server.mjs",
+    "update:urls": "powershell -ExecutionPolicy Bypass -File scripts/update-clean-urls.ps1"
+  }
+}

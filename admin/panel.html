@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Yönetim Paneli | NODVIRA</title>
+  <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg?v=20260901">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="assets/admin.css?v=20260831-project01">
+</head>
+<body class="admin-panel-page" data-auth-ready="false">
+  <div class="admin-shell">
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <a class="admin-brand" href="panel.html">
+        <img src="../assets/brand/nodvira-logo.svg?v=20260826-static1" alt="">
+      </a>
+      <nav class="admin-nav" aria-label="Yönetim menüsü">
+        <a class="active" href="#overview" data-admin-view="overview"><span>⌂</span>Genel Bakış</a>
+        <a href="#requests" data-admin-view="requests"><span>↗</span>Talepler <span class="nav-count" id="request-nav-count">0</span></a>
+        <a href="#blog" data-admin-view="blog"><span>▤</span>Blog Yazıları</a>
+        <a href="#projects" data-admin-view="projects"><span>◇</span>Referanslar</a>
+        <a href="#uploads" data-admin-view="uploads"><span>▧</span>Görseller</a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/">← Siteye dön</a>
+        <button id="logout-button" type="button">Oturumu kapat</button>
+      </div>
+    </aside>
+
+    <div class="admin-workspace">
+      <header class="admin-topbar">
+        <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="admin-sidebar" aria-label="Menüyü aç">☰</button>
+        <div><p class="topbar-date" id="topbar-date"></p><strong id="admin-display-name">Yönetici</strong></div>
+        <span class="admin-avatar" id="admin-avatar" aria-hidden="true">DY</span>
+      </header>
+
+      <main class="admin-content">
+        <section class="admin-view active" data-view-panel="overview">
+          <div class="admin-page-heading">
+            <div><span class="admin-eyebrow">Genel Bakış</span><h1>Yönetim alanı.</h1></div>
+            <p>İletişim taleplerinin güncel durumunu tek bakışta takip edin.</p>
+          </div>
+          <div class="summary-grid">
+            <article class="summary-card"><span>Yeni talepler</span><strong id="new-request-count">0</strong><small>Henüz incelenmeyen kayıtlar</small></article>
+            <article class="summary-card"><span>İncelenen talepler</span><strong id="read-request-count">0</strong><small>Okundu olarak işaretlenen kayıtlar</small></article>
+            <article class="summary-card"><span>Kapatılan talepler</span><strong id="closed-request-count">0</strong><small>İşlemi tamamlanan kayıtlar</small></article>
+          </div>
+          <article class="admin-empty-card">
+            <span class="empty-icon">↗</span>
+            <div><h2>Talep yönetimi aktif</h2><p>Yeni kayıtlar iletişim formundan doğrudan bu ekrana düşer.</p></div>
+          </article>
+        </section>
+
+        <section class="admin-view" data-view-panel="requests" hidden>
+          <div class="admin-page-heading">
+            <div><span class="admin-eyebrow">Talepler</span><h1>İletişim talepleri.</h1></div>
+            <p>Kayıtları arayın, detaylarını inceleyin ve işlem durumlarını güncelleyin.</p>
+          </div>
+          <div class="request-toolbar">
+            <label class="admin-search"><span class="sr-only">Talep ara</span><input id="request-search" type="search" placeholder="Ad, firma veya e-posta ara"></label>
+            <div class="status-filters" aria-label="Talep durumları">
+              <button class="active" type="button" data-status-filter="">Tümü</button>
+              <button type="button" data-status-filter="new">Yeni</button>
+              <button type="button" data-status-filter="read">Okundu</button>
+              <button type="button" data-status-filter="closed">Kapatıldı</button>
+            </div>
+          </div>
+          <div class="request-list-shell" id="request-list-shell"></div>
+          <p class="request-feedback" id="request-feedback" aria-live="polite"></p>
+        </section>
+
+        <section class="admin-view" data-view-panel="blog" hidden>
+          <div class="admin-page-heading">
+            <div><span class="admin-eyebrow">Blog</span><h1>Mevcut yazılar.</h1></div>
+            <div class="admin-heading-actions"><p>Yazıları oluşturun, düzenleyin ve yayın durumlarını yönetin.</p><button class="admin-button admin-button-primary compact-button" id="new-post-button" type="button">Yeni yazı</button></div>
+          </div>
+          <div class="blog-toolbar">
+            <label class="admin-search"><span class="sr-only">Blog yazısı ara</span><input id="blog-admin-search" type="search" placeholder="Başlık, URL kısa adı veya açıklama ara"></label>
+            <div class="status-filters" aria-label="Blog yayın durumları">
+              <button class="active" type="button" data-blog-status="">Tümü</button>
+              <button type="button" data-blog-status="published">Yayında</button>
+              <button type="button" data-blog-status="draft">Taslak</button>
+            </div>
+          </div>
+          <div class="blog-list" id="blog-list"></div>
+          <nav class="admin-pagination" id="blog-pagination" aria-label="Blog sayfaları" hidden></nav>
+          <p class="request-feedback" id="blog-feedback" aria-live="polite"></p>
+        </section>
+
+        <section class="admin-view" data-view-panel="projects" hidden>
+          <div class="admin-page-heading">
+            <div><span class="admin-eyebrow">Referanslar</span><h1>Proje vakaları.</h1></div>
+            <div class="admin-heading-actions"><p>Anonim vaka çalışmalarını oluşturun, sıralayın ve yayın durumlarını yönetin.</p><button class="admin-button admin-button-primary compact-button" id="new-project-button" type="button">Yeni referans</button></div>
+          </div>
+          <div class="blog-toolbar">
+            <label class="admin-search"><span class="sr-only">Referans ara</span><input id="project-admin-search" type="search" placeholder="Başlık, URL kısa adı veya açıklama ara"></label>
+            <div class="status-filters" aria-label="Referans yayın durumları">
+              <button class="active" type="button" data-project-status="">Tümü</button>
+              <button type="button" data-project-status="published">Yayında</button>
+              <button type="button" data-project-status="draft">Taslak</button>
+            </div>
+          </div>
+          <div class="blog-list" id="project-admin-list"></div>
+          <p class="request-feedback" id="project-feedback" aria-live="polite"></p>
+        </section>
+
+        <section class="admin-view" data-view-panel="uploads" hidden>
+          <div class="admin-page-heading">
+            <div><span class="admin-eyebrow">Görseller</span><h1>Kullanılmayan yüklemeler.</h1></div>
+            <div class="admin-heading-actions"><p>Hiçbir blog yazısı veya referans tarafından kullanılmayan dosyaları denetleyin.</p><button class="danger-button" id="cleanup-uploads-button" type="button">Eski dosyaları temizle</button></div>
+          </div>
+          <div class="upload-list" id="upload-list"></div>
+          <p class="request-feedback" id="upload-feedback" aria-live="polite"></p>
+        </section>
+      </main>
+    </div>
+  </div>
+  <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+  <dialog class="request-dialog" id="request-dialog">
+    <div class="dialog-header">
+      <div><span class="admin-eyebrow">Talep detayı</span><h2 id="dialog-request-name">—</h2></div>
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Pencereyi kapat">×</button>
+    </div>
+    <div class="request-detail-grid">
+      <div><span>Firma</span><strong id="dialog-company">—</strong></div>
+      <div><span>Hizmet</span><strong id="dialog-service">—</strong></div>
+      <div><span>E-posta</span><a id="dialog-email" href="#">—</a></div>
+      <div><span>Telefon</span><a id="dialog-phone" href="#">—</a></div>
+      <div><span>Oluşturulma</span><strong id="dialog-created">—</strong></div>
+      <div><span>Durum</span><strong id="dialog-current-status">—</strong></div>
+    </div>
+    <div class="request-message-block"><span>Mesaj</span><p id="dialog-message">—</p></div>
+    <div class="dialog-actions">
+      <label>Talep durumu
+        <select id="dialog-status">
+          <option value="new">Yeni</option>
+          <option value="read">Okundu</option>
+          <option value="closed">Kapatıldı</option>
+        </select>
+      </label>
+      <button class="admin-button admin-button-primary compact-button" id="save-request-status" type="button">Durumu kaydet</button>
+    </div>
+  </dialog>
+
+  <dialog class="post-dialog" id="post-dialog">
+    <form id="post-form" novalidate>
+      <div class="dialog-header">
+        <div><span class="admin-eyebrow" id="post-dialog-mode">Yeni yazı</span><h2 id="post-dialog-title">Blog yazısı oluşturun.</h2></div>
+        <button class="dialog-close" id="post-dialog-close" type="button" aria-label="Pencereyi kapat">×</button>
+      </div>
+      <div class="post-form-body">
+        <div class="post-form-grid">
+          <label class="full-field">Başlık
+            <input id="post-title" name="title" required minlength="3" maxlength="220" autocomplete="off">
+          </label>
+          <label>URL kısa adı
+            <input id="post-slug" name="slug" required minlength="3" maxlength="220" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" autocomplete="off">
+            <small>Yalnızca küçük harf, rakam ve tire.</small>
+          </label>
+          <label>Kategori
+            <select id="post-category" name="category" required>
+              <option value="web">Web Teknolojileri</option>
+              <option value="software">Yazılım</option>
+              <option value="network">Network</option>
+              <option value="system">Sistem</option>
+              <option value="transformation">Dijital Dönüşüm</option>
+              <option value="consulting">Teknoloji Danışmanlığı</option>
+            </select>
+          </label>
+          <label class="full-field">Kısa açıklama
+            <textarea id="post-excerpt" name="excerpt" rows="3" required minlength="20" maxlength="500"></textarea>
+            <small><span id="excerpt-count">0</span>/500 karakter</small>
+          </label>
+          <label class="full-field">İçerik
+            <textarea id="post-content" name="content" rows="16" required minlength="50" maxlength="200000" placeholder="## Bölüm başlığı&#10;&#10;Paragraf içeriği..."></textarea>
+            <small>Başlıklar için ##, listeler için - işaretini kullanabilirsiniz.</small>
+          </label>
+          <label>Yayın durumu
+            <select id="post-status" name="status" required>
+              <option value="draft">Taslak</option>
+              <option value="published">Yayında</option>
+            </select>
+          </label>
+          <label>Yayın tarihi <span class="optional-label">(isteğe bağlı)</span>
+            <input id="post-published-at" name="publishedAt" type="datetime-local">
+            <small>Boş bırakılırsa ilk yayında güncel tarih kullanılır.</small>
+          </label>
+          <label class="full-field">Kapak görseli <span class="optional-label">(isteğe bağlı)</span>
+            <input id="post-image-file" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>JPEG, PNG veya WebP; en fazla 5 MB. Seçildiğinde güvenli biçimde yüklenir.</small>
+            <input id="post-image-path" name="imagePath" maxlength="2000" placeholder="Henüz görsel seçilmedi" autocomplete="off" readonly>
+          </label>
+          <label class="full-field">Görsel açıklaması (alt metni)
+            <input id="post-image-alt" name="imageAlt" maxlength="300" placeholder="Görselde ne olduğunu kısa ve doğal biçimde açıklayın.">
+          </label>
+          <label class="full-field">SEO başlığı
+            <input id="post-seo-title" name="seoTitle" maxlength="70" placeholder="Arama sonucunda görünecek başlık">
+            <small><span id="post-seo-title-count">0</span>/70 karakter · 30–60 karakter önerilir.</small>
+          </label>
+          <label class="full-field">Meta açıklaması
+            <textarea id="post-meta-description" name="metaDescription" rows="3" maxlength="180" placeholder="Yazının kullanıcıya sağlayacağı değeri özetleyin."></textarea>
+            <small><span id="post-meta-count">0</span>/180 karakter · 120–160 karakter önerilir.</small>
+          </label>
+          <label>Yazar / yayınlayan
+            <input id="post-author-name" name="authorName" maxlength="160" value="NODVIRA">
+          </label>
+          <label>Teknik inceleyen <span class="optional-label">(isteğe bağlı)</span>
+            <input id="post-reviewer-name" name="reviewerName" maxlength="160">
+          </label>
+        </div>
+        <aside class="seo-checklist" id="post-seo-checklist" aria-live="polite">
+          <div class="seo-checklist-heading"><div><span class="admin-eyebrow">Yayın Kontrolü</span><h3>Blog SEO kontrol listesi</h3></div><strong id="post-seo-score">0/0</strong></div>
+          <p>Taslaklar eksik kaydedilebilir. Kırmızı maddeler tamamlanmadan yayın yapılamaz.</p>
+          <ul id="post-seo-required"></ul>
+          <h4>İyileştirme önerileri</h4>
+          <ul id="post-seo-warnings"></ul>
+          <div class="search-preview"><small>Google önizlemesi</small><strong id="post-search-preview-title">Yazı başlığı</strong><span id="post-search-preview-url">nodvira.com/blog/yazi-adresi</span><p id="post-search-preview-description">Meta açıklaması burada gösterilecek.</p></div>
+        </aside>
+        <p class="form-message post-form-message" id="post-form-message" aria-live="polite"></p>
+      </div>
+      <div class="post-form-actions">
+        <button class="danger-button" id="delete-post-button" type="button" hidden>Yazıyı sil</button>
+        <div>
+          <button class="secondary-admin-button" id="cancel-post-button" type="button">Vazgeç</button>
+          <button class="admin-button admin-button-primary compact-button" id="save-post-button" type="submit">Yazıyı kaydet</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="post-dialog project-dialog" id="project-dialog">
+    <form id="project-form" novalidate>
+      <div class="dialog-header">
+        <div><span class="admin-eyebrow" id="project-dialog-mode">Yeni referans</span><h2 id="project-dialog-title">Proje vakası oluşturun.</h2></div>
+        <button class="dialog-close" id="project-dialog-close" type="button" aria-label="Pencereyi kapat">×</button>
+      </div>
+      <div class="post-form-body project-form-body">
+        <fieldset class="project-fieldset"><legend>Temel bilgiler</legend><div class="post-form-grid">
+          <label class="full-field">Başlık<input id="project-title" name="title" required minlength="3" maxlength="220"></label>
+          <label>URL kısa adı<input id="project-slug" name="slug" required minlength="3" maxlength="220" pattern="[a-z0-9]+(?:-[a-z0-9]+)*"><small>Yalnızca küçük harf, rakam ve tire.</small></label>
+          <label>Kategori<select id="project-category" name="category" required><option value="web">Web</option><option value="software">Yazılım</option><option value="network">Network</option><option value="system">Sistem</option><option value="consulting">Teknoloji Danışmanlığı</option></select></label>
+          <label class="full-field">Özet<textarea id="project-summary" name="summary" rows="4" required minlength="30" maxlength="800"></textarea></label>
+          <label>Yayın durumu<select id="project-status" name="status"><option value="draft">Taslak</option><option value="published">Yayında</option></select></label>
+          <label>Sıra<input id="project-sort-order" name="sortOrder" type="number" min="0" max="1000000" step="10" value="100" required></label>
+          <label>Yayın tarihi<input id="project-published-at" name="publishedAt" type="datetime-local"><small>İlk yayında boşsa güncel tarih kullanılır.</small></label>
+          <label class="full-field">Kapak görseli
+            <input id="project-image-file" type="file" accept="image/jpeg,image/png,image/webp">
+            <small>JPEG, PNG veya WebP; en fazla 5 MB. Seçildiğinde güvenli biçimde yüklenir.</small>
+            <input id="project-image-path" name="imagePath" maxlength="2000" placeholder="Henüz görsel seçilmedi" readonly>
+          </label>
+        </div></fieldset>
+
+        <fieldset class="project-fieldset"><legend>Proje bağlamı ve kapak</legend><div class="post-form-grid">
+          <label>Müşteri<input id="project-client" required maxlength="220"></label>
+          <label>Sektör<input id="project-industry" required maxlength="220"></label>
+          <label class="full-field">Hizmetler<input id="project-services" required maxlength="500" placeholder="UX · Front-end · Teknik SEO"></label>
+          <label>Rapor durumu<input id="project-report-status" required maxlength="120" value="Anonim vaka raporu"></label>
+          <label>Proje kodu<input id="project-code" required maxlength="40" placeholder="WEB / 06"></label>
+          <label>Kapak etiketi<input id="project-visual-label" required maxlength="160"></label>
+          <label>Kapak alt bilgisi<input id="project-visual-caption" required maxlength="300"></label>
+        </div></fieldset>
+
+        <fieldset class="project-fieldset"><legend>SEO ve yayın bilgileri</legend><div class="post-form-grid">
+          <label class="full-field">Görsel açıklaması (alt metni)<input id="project-image-alt" maxlength="300" placeholder="Proje görselini doğal ve açıklayıcı biçimde anlatın."></label>
+          <label class="full-field">SEO başlığı<input id="project-seo-title" maxlength="70"><small><span id="project-seo-title-count">0</span>/70 karakter · 30–60 karakter önerilir.</small></label>
+          <label class="full-field">Meta açıklaması<textarea id="project-meta-description" rows="3" maxlength="180"></textarea><small><span id="project-meta-count">0</span>/180 karakter · 120–160 karakter önerilir.</small></label>
+        </div></fieldset>
+
+        <fieldset class="project-fieldset"><legend>Vaka anlatımı</legend><div class="post-form-grid">
+          <label class="full-field">İhtiyaç<textarea id="project-need" rows="7" required placeholder="Paragrafları boş satırla ayırın."></textarea></label>
+          <label class="full-field">Yaklaşım<textarea id="project-approach" rows="7" required placeholder="Paragrafları boş satırla ayırın."></textarea></label>
+          <label class="full-field">Çözüm<textarea id="project-solution" rows="7" required placeholder="Paragrafları boş satırla ayırın."></textarea></label>
+          <label class="full-field">Sonuç özeti<textarea id="project-outcome-lead" rows="3" required></textarea></label>
+          <label class="full-field">Sonuç detayları<textarea id="project-outcome" rows="7" required placeholder="Paragrafları boş satırla ayırın."></textarea></label>
+        </div></fieldset>
+
+        <fieldset class="project-fieldset"><legend>Teknik yapı ve süreç</legend><div class="post-form-grid">
+          <label class="full-field">Teknik yaklaşım girişi<textarea id="project-technical-intro" rows="3" required></textarea></label>
+          <label class="full-field">Mimari katmanlar<textarea id="project-architecture" rows="7" required placeholder="Başlık | Açıklama&#10;Başlık | Açıklama"></textarea><small>Her satırda başlık ve açıklamayı | ile ayırın.</small></label>
+          <label class="full-field">Teknik not<textarea id="project-technical-note" rows="3" required></textarea></label>
+          <label class="full-field">Uygulama süreci<textarea id="project-process" rows="7" required placeholder="Adım | Açıklama&#10;Adım | Açıklama"></textarea><small>Her satırda adım ve açıklamayı | ile ayırın.</small></label>
+          <label class="full-field">İlgili hizmetler<textarea id="project-related" rows="4" required placeholder="Web Çözümleri | /hizmetlerimiz/web-cozumleri"></textarea><small>Her satırda hizmet adı ve bağlantıyı | ile ayırın.</small></label>
+        </div></fieldset>
+        <aside class="seo-checklist" id="project-seo-checklist" aria-live="polite">
+          <div class="seo-checklist-heading"><div><span class="admin-eyebrow">Yayın Kontrolü</span><h3>Referans SEO kontrol listesi</h3></div><strong id="project-seo-score">0/0</strong></div>
+          <p>Taslaklar eksik kaydedilebilir. Kırmızı maddeler tamamlanmadan yayın yapılamaz.</p>
+          <ul id="project-seo-required"></ul>
+          <h4>İyileştirme önerileri</h4>
+          <ul id="project-seo-warnings"></ul>
+          <div class="search-preview"><small>Google önizlemesi</small><strong id="project-search-preview-title">Referans başlığı</strong><span id="project-search-preview-url">nodvira.com/referanslarimiz/proje-adresi</span><p id="project-search-preview-description">Meta açıklaması burada gösterilecek.</p></div>
+        </aside>
+        <p class="form-message post-form-message" id="project-form-message" aria-live="polite"></p>
+      </div>
+      <div class="post-form-actions">
+        <button class="danger-button" id="delete-project-button" type="button" hidden>Referansı sil</button>
+        <div><button class="secondary-admin-button" id="cancel-project-button" type="button">Vazgeç</button><button class="admin-button admin-button-primary compact-button" id="save-project-button" type="submit">Referansı kaydet</button></div>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="assets/admin.js?v=20260831-seo01"></script>
+  <script src="assets/projects.js?v=20260831-seo01"></script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+Options -MultiViews
+DirectoryIndex index.html
+
+RewriteEngine On
+
+# Eski referans detay adreslerini kalıcı olarak yeni proje adreslerine taşı.
+RewriteCond %{THE_REQUEST} \s/+referans-detay\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} ^project=web$ [NC]
+RewriteRule ^referans-detay\.html$ /referanslarimiz/kurumsal-web-platformu [R=301,L,NE,QSD]
+
+RewriteCond %{THE_REQUEST} \s/+referans-detay\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} ^project=software$ [NC]
+RewriteRule ^referans-detay\.html$ /referanslarimiz/soguk-zincir-istisna-yonetimi [R=301,L,NE,QSD]
+
+RewriteCond %{THE_REQUEST} \s/+referans-detay\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} ^project=network$ [NC]
+RewriteRule ^referans-detay\.html$ /referanslarimiz/ag-standardizasyonu [R=301,L,NE,QSD]
+
+RewriteCond %{THE_REQUEST} \s/+referans-detay\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} ^project=system$ [NC]
+RewriteRule ^referans-detay\.html$ /referanslarimiz/sistem-modernizasyonu [R=301,L,NE,QSD]
+
+RewriteCond %{THE_REQUEST} \s/+referans-detay\.html[?\s] [NC]
+RewriteCond %{QUERY_STRING} ^project=consulting$ [NC]
+RewriteRule ^referans-detay\.html$ /referanslarimiz/teknoloji-yol-haritasi [R=301,L,NE,QSD]
+
+# Eski blog detay adresini yeni yazı adresine taşı.
+RewriteCond %{THE_REQUEST} \s/+blog-detay\.html\?slug=([^&\s]+) [NC]
+RewriteRule ^blog-detay\.html$ /blog/%1 [R=301,L,NE,QSD]
+
+# Eski düz HTML adreslerini temiz adreslere taşı.
+RewriteCond %{THE_REQUEST} \s/+index\.html(?:[?\s]) [NC]
+RewriteRule ^index\.html$ / [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+hizmetler\.html(?:[?\s]) [NC]
+RewriteRule ^hizmetler\.html$ /hizmetlerimiz [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+web-tasarim\.html(?:[?\s]) [NC]
+RewriteRule ^web-tasarim\.html$ /hizmetlerimiz/web-cozumleri [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+yazilim-cozumleri\.html(?:[?\s]) [NC]
+RewriteRule ^yazilim-cozumleri\.html$ /hizmetlerimiz/yazilim-cozumleri [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+network\.html(?:[?\s]) [NC]
+RewriteRule ^network\.html$ /hizmetlerimiz/network-cozumleri [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+sistem-cozumleri\.html(?:[?\s]) [NC]
+RewriteRule ^sistem-cozumleri\.html$ /hizmetlerimiz/sistem-cozumleri [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+cozumler\.html(?:[?\s]) [NC]
+RewriteRule ^cozumler\.html$ /hizmetlerimiz/teknoloji-danismanligi [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+projeler\.html(?:[?\s]) [NC]
+RewriteRule ^projeler\.html$ /referanslarimiz [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+hakkimda\.html(?:[?\s]) [NC]
+RewriteRule ^hakkimda\.html$ /hakkimizda [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+blog\.html(?:[?\s]) [NC]
+RewriteRule ^blog\.html$ /blog [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+sss\.html(?:[?\s]) [NC]
+RewriteRule ^sss\.html$ /sss [R=301,L,NE]
+
+RewriteCond %{THE_REQUEST} \s/+iletisim\.html(?:[?\s]) [NC]
+RewriteRule ^iletisim\.html$ /iletisim [R=301,L,NE]
+
+# Temiz adresleri mevcut statik HTML dosyalarına bağla.
+RewriteRule ^hizmetlerimiz/?$ hizmetler.html [L]
+RewriteRule ^hizmetlerimiz/web-cozumleri/?$ web-tasarim.html [L]
+RewriteRule ^hizmetlerimiz/yazilim-cozumleri/?$ yazilim-cozumleri.html [L]
+RewriteRule ^hizmetlerimiz/network-cozumleri/?$ network.html [L]
+RewriteRule ^hizmetlerimiz/sistem-cozumleri/?$ sistem-cozumleri.html [L]
+RewriteRule ^hizmetlerimiz/teknoloji-danismanligi/?$ cozumler.html [L]
+RewriteRule ^referanslarimiz/?$ projeler.html [L]
+RewriteRule ^referanslarimiz/kurumsal-web-platformu/?$ referans-detay.html?project=web [QSA,L]
+RewriteRule ^referanslarimiz/soguk-zincir-istisna-yonetimi/?$ referans-detay.html?project=software [QSA,L]
+RewriteRule ^referanslarimiz/ag-standardizasyonu/?$ referans-detay.html?project=network [QSA,L]
+RewriteRule ^referanslarimiz/sistem-modernizasyonu/?$ referans-detay.html?project=system [QSA,L]
+RewriteRule ^referanslarimiz/teknoloji-yol-haritasi/?$ referans-detay.html?project=consulting [QSA,L]
+RewriteRule ^hakkimizda/?$ hakkimda.html [L]
+RewriteRule ^blog/?$ blog.html [L]
+RewriteRule ^blog/([^/]+)/?$ blog-detay.html?slug=$1 [QSA,L]
+RewriteRule ^sss/?$ sss.html [L]
+RewriteRule ^iletisim/?$ iletisim.html [L]
