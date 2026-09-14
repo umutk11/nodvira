@@ -1,7 +1,32 @@
 services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: nodvira-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      UPLOAD_DIR: /app/backend/uploads
+    expose:
+      - "3000"
+    volumes:
+      - nodvira-uploads:/app/backend/uploads
+    restart: unless-stopped
+
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: nodvira-web
+    depends_on:
+      - backend
     ports:
       - "3030:80"
     restart: unless-stopped
+
+volumes:
+  nodvira-uploads:
