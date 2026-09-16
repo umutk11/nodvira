@@ -54,6 +54,7 @@ const caseSlugs = new Map([
 const validCaseSlugs = new Set(caseSlugs.values());
 
 const contentTypes = {
+  ".avif": "image/avif",
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
   ".ico": "image/x-icon",
