@@ -10,11 +10,15 @@ services:
       NODE_ENV: production
       HOST: 0.0.0.0
       PORT: 3000
+      # Container path; bind-mounted to host /var/www/nodvira-data/uploads below.
       UPLOAD_DIR: /app/backend/uploads
+    extra_hosts:
+      # Reach host PostgreSQL from the backend container via host.docker.internal.
+      - "host.docker.internal:host-gateway"
     expose:
       - "3000"
     volumes:
-      - nodvira-uploads:/app/backend/uploads
+      - /var/www/nodvira-data/uploads:/app/backend/uploads
     restart: unless-stopped
 
   web:
@@ -27,6 +31,3 @@ services:
     ports:
       - "3030:80"
     restart: unless-stopped
-
-volumes:
-  nodvira-uploads:
