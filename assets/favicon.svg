@@ -10,12 +10,12 @@
   <g fill="url(#nodvira-gradient)">
     <path d="M32 39 361 243v68L99 158v186l-67 59V39Z"/>
     <path d="m143 240 337 209v102L143 307v-67Z"/>
-    <path d="M413 188 480 144v305l-67-41V188Z"/>
-    <path d="m389 213 63-48 28 38-67 50-24-40Z"/>
-    <rect x="452" y="66" width="28" height="113" rx="14"/>
+    <path d="m413 188 39-28V66h28v383l-67-41V188Z"/>
+    
+    
     <circle cx="466" cy="50" r="38"/>
-    <path d="m32 402 67-59 43 38-65 58-45-37Z"/>
-    <rect x="32" y="390" width="28" height="115" rx="14"/>
+    <path d="m32 402 67-59 22 20-61 54v88H32V402Z"/>
+    
     <circle cx="46" cy="518" r="40"/>
   </g>
 </svg>

@@ -1391,6 +1391,8 @@ h3 { font-size: clamp(1.18rem, 1.75vw, 1.48rem); }
 }
 
 .hero-brand-core .hero-stat { width: 192px; }
+.hero-brand-core .hero-stat::before { inset: -6px; }
+.hero-brand-core .hero-stat::after { inset: -12px; }
 .hero-brand-index { margin-top: 12px; }
 
 @keyframes hero-brand-core-focus {

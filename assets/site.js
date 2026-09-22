@@ -873,7 +873,7 @@ function applyBrandAssets(root) {
     if (mark.querySelector(".hero-brand-symbol")) return;
     const image = document.createElement("img");
     image.className = "hero-brand-symbol hero-brand-icon";
-    image.src = "/assets/favicon.svg?v=20260901";
+    image.src = "/assets/favicon.svg?v=20260922-hero02";
     image.alt = "";
     image.setAttribute("aria-hidden", "true");
     mark.replaceChildren(image);
